@@ -1,0 +1,65 @@
+Enter string:      
+     1Mylabel:   mov #11  , LAbal1232
+ERROR: Label name can't start with number on line -1 in file test1
+     Mylabel :   mov #11  , LAbal1232
+ERROR: Unknown OP name on line -1 in file test1
+     mylabel   mov #11  , LAbal1232
+ERROR: Unknown OP name on line -1 in file test1
+     mylabel:
+ERROR: Line ended unexpectly on line -1 in file test1
+     mylabel:   
+ERROR: Line ended unexpectly on line -1 in file test1
+     mylabel:   ,
+ERROR: Unknown OP name on line -1 in file test1
+     a1234567891234567890123456789012:    mov #11  , LAbal1232
+ERROR: Label is longer than allowed on line -1 in file test1
+     a123456789123456789012345678901:    mov #11  , LAbal1232
+
+Passed     #test
+     .string"abc"
+ERROR: Expected whitespace on line -1 in file test1
+     .string abc"
+ERROR: Invalid string format on line -1 in file test1
+     .string "abc
+ERROR: Line ended unexpectly on line -1 in file test1
+     .string 1"abc"
+ERROR: Invalid string format on line -1 in file test1
+     .string 
+ERROR: Line ended unexpectly on line -1 in file test1
+     .string
+ERROR: Line ended unexpectly on line -1 in file test1
+     mylabel: .data -11.1
+ERROR: Real numbers not allowed, on line -1 in file test1
+     mylabel: .data11
+ERROR: Expected whitespace on line -1 in file test1
+     mylabel: .data,11
+ERROR: Expected whitespace on line -1 in file test1
+     mylabel: .data 11,
+ERROR: Expected a number but line ended on line -1 in file test1
+     mylabel: .data 11,-22,
+ERROR: Expected a number but line ended on line -1 in file test1
+     mylabel: .data 11123123123123123,-22
+ERROR: The number is bigger then 21 bits on line -1 in file test1
+     mylabel: .data r1
+ERROR: Undefined number on line -1 in file test1
+     mylabel: .data test
+ERROR: Undefined number on line -1 in file test1
+     mylabel: .data
+ERROR: Line ended unexpectly on line -1 in file test1
+     mylabel: .data 
+ERROR: Line ended unexpectly on line -1 in file test1
+     .extern EDFD:
+ERROR: Invalid string format on line -1 in file test1
+     .extern EDFD:
+ERROR: Invalid string format on line -1 in file test1
+     .extern "EDFD"
+ERROR: Label should start with a letter on line -1 in file test1, label ignored
+     .extern 1EDFD
+ERROR: Label name can't start with number on line -1 in file test1
+     .extern ED,FD
+ERROR: Invalid string format on line -1 in file test1
+     .extern
+ERROR: Line ended unexpectly on line -1 in file test1
+     .extern    
+ERROR: Line ended unexpectly on line -1 in file test1
+
