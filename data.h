@@ -28,6 +28,11 @@ typedef struct symbol {
     struct symbol* next;
 } symbol;
 
+typedef struct error_stat {
+    char* err_code;
+    int failed;
+} error_stat;
+
 typedef struct {
     int label_flag;
     char* label_name; 
@@ -36,15 +41,13 @@ typedef struct {
     int num_oper;
     list* data;
     char* str;
-    // int entry_flag; 
-    // int extern_flag;
     operand op_src;
     operand op_dst;
     int num_words; /*calculate the words required for current line*/    
-    int failed;
+    error_stat error;
     char* filename;
     int line_num;
-    char* ERROR;
+    
 
 } line;
 
