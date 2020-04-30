@@ -2,12 +2,32 @@
 #define ERROR_LABEL_CANNOT_START_WITH_NUM "ERROR: Label name can't start with number on line %d in file %s\n"
 #define ERROR_LABEL_NAME_TOO_LONG "ERROR: Label is longer than allowed on line %d in file %s\n"
 #define ERROR_LABEL_NAME_NOT_LETTER_OR_NUM "ERROR: Label names must be alphanumeric, violation on line %d in file %s\n"
+#define ERROR_LABEL_EMPTY "ERROR: Line ended after label declaration on line %d in file %s\n"
 
 
 /* general */
 #define ERROR_LINE_TOO_LONG "ERROR: Line number %d longer than the max allowed in file %s\n"
 #define ERROR_OUT_OF_MEMORY "FATAL: OUT OF MEMORY!\n"
 
+/* Directive */
+#define ERROR_UNDEFINED_DIRECTIVE "ERROR: Invalid directive on line  %d in file %s\n"
+#define ERROR_EXPECTED_SPACE_DIRECTIVE "ERROR: Expected space after directive on line  %d in file %s\n"
+
+/* Directive Strings*/
+
+#define ERROR_EXPECTED_DOUBLE_BRACKET "ERROR: Expected double bracket for string declaration on line  %d in file %s\n"
+#define ERROR_EMPTY_STRING "ERROR: Empty string on line  %d in file %s\n"
+#define ERROR_STRING_EOL "ERROR: Line ended without string double bracket encapsulation on line  %d in file %s\n"
+#define ERROR_STRING_INVALID "ERROR: Invalid character on string declaration on line  %d in file %s\n"
+#define ERROR_STRING_EXPECTED_EOL "ERROR: Line expected to end after string declaration on line  %d in file %s\n"
+
+/* NUMS */
+#define ERROR_EXPECTED_NUM_COMMA "ERROR: Comma appear before digits on line  %d in file %s\n"
+#define ERROR_MISSING_COMMA "ERROR: Missing comma between numbers on line  %d in file %s\n"
+#define ERROR_EXPECTED_NUM_INT "ERROR: Expect to get integer numbers only on line  %d in file %s\n"
+#define ERROR_EXPECTED_NUM_EOL "ERROR: Expect to get numbers but line ended  on line %d in file %s\n"
+#define ERROR_EXPECTED_NUM "ERROR: Invalid number format on line %d in file %s\n"
+#define ERROR_NUM_RANGE "ERROR: Number out of range on line %d in file %s\n"
 
 
 // /* Labels */

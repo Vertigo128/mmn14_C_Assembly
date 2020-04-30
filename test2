@@ -1,0 +1,9 @@
+     #test
+     .string"abc"
+     .string abc"
+     .string "abc
+     .string 1"abc"
+     .string    
+     .string
+     .string "abc@DCZXC+}\|"
+

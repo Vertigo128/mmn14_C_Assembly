@@ -1,0 +1,17 @@
+Enter String:
+     #test
+     .string"abc"
+ERROR: Expected space after directive on line  0 in file test1
+     .string abc"
+ERROR: Expected double bracket for string declaration on line  0 in file test1
+     .string "abc
+ERROR: Line ended without string double bracket encapsulation on line  0 in file test1
+     .string 1"abc"
+ERROR: Expected double bracket for string declaration on line  0 in file test1
+     .string    
+ERROR: Expected double bracket for string declaration on line  0 in file test1
+     .string
+ERROR: Expected double bracket for string declaration on line  0 in file test1
+     .string "abc@DCZXC+}\|"
+Current STring is abc@DCZXC+}\| :Directive is: 2Passed
+
