@@ -2,7 +2,19 @@
 #define ERROR_LABEL_CANNOT_START_WITH_NUM "ERROR: Label name can't start with number on line %d in file %s\n"
 #define ERROR_LABEL_NAME_TOO_LONG "ERROR: Label is longer than allowed on line %d in file %s\n"
 #define ERROR_LABEL_NAME_NOT_LETTER_OR_NUM "ERROR: Label names must be alphanumeric, violation on line %d in file %s\n"
+#define ERROR_LABEL_INVALID_FORMAT "ERROR: Invalid format for label on line %d in file %s\n"
 #define ERROR_LABEL_EMPTY "ERROR: Line ended after label declaration on line %d in file %s\n"
+#define ERROR_LABEL_ON_EMPTY "ERROR: Line ended on label declaration on line %d in file %s\n"
+#define ERROR_LABEL_NAME_IDENTICAL_OP_NAME "ERROR: Label name can't be equal to operation names on line %d in file %s\n"
+#define ERROR_LABEL_NAME_IDENTICAL_REG_MAME "ERROR: Label name can't be equal to register names on line %d in file %s\n"
+#define ERROR_LABEL_NAME_IDENTICAL_DIR_MAME "ERROR: Label name can't be equal to directive names on line %d in file %s\n"
+#define ERROR_LABEL_NO_BRACKET "ERROR: No brackets needed on directive label declaration on line %d in file %s\n"
+
+/* Operations */
+#define ERROR_OPERATION_INVALID_FORMAT "ERROR: Unknown operation on line %d in file %s\n"
+#define ERROR_OPERATION_EXPECTED_SPACE "ERROR: Expected space after operation on line %d in file %s\n"
+#define ERROR_OPERATION_EXPECTED_EOL "ERROR: Expected end of line on line %d in file %s\n"
+#define ERROR_OPERATION_EXPECTED_NONE_EOL "ERROR: missing data for operation reading on line %d in file %s\n"
 
 
 /* general */

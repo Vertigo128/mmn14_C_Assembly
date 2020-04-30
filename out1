@@ -1,17 +1,25 @@
 Enter String:
-     #test
-     .string"abc"
+     .entry test
+Current STring is test :Directive is: 3Passed
+     .extern test
+Current STring is test :Directive is: 4Passed
+     .externtest
 ERROR: Expected space after directive on line  0 in file test1
-     .string abc"
-ERROR: Expected double bracket for string declaration on line  0 in file test1
-     .string "abc
-ERROR: Line ended without string double bracket encapsulation on line  0 in file test1
-     .string 1"abc"
-ERROR: Expected double bracket for string declaration on line  0 in file test1
-     .string    
-ERROR: Expected double bracket for string declaration on line  0 in file test1
-     .string
-ERROR: Expected double bracket for string declaration on line  0 in file test1
-     .string "abc@DCZXC+}\|"
-Current STring is abc@DCZXC+}\| :Directive is: 2Passed
+     .extern "test"
+ERROR: No brackets needed on directive label declaration on line 0 in file test1
+     .extern 1test"
+ERROR: Label name can't start with number on line 0 in file test1
+     .extern "1test"
+ERROR: No brackets needed on directive label declaration on line 0 in file test1
+     .extern r1
+ERROR: Label name can't be equal to register names on line 0 in file test1
+     .extern cpy
+Current STring is cpy :Directive is: 4Passed
+     mylabel: .extern test
+Current STring is test :Directive is: 4Passed
+     .extern 
+ERROR: Line ended on label declaration on line 0 in file test1
+     .extern
+ERROR: Line ended on label declaration on line 0 in file test1
+
 

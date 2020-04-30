@@ -1,9 +1,13 @@
-     #test
-     .string"abc"
-     .string abc"
-     .string "abc
-     .string 1"abc"
-     .string    
-     .string
-     .string "abc@DCZXC+}\|"
+     .entry test
+     .extern test
+     .externtest
+     .extern "test"
+     .extern 1test"
+     .extern "1test"
+     .extern r1
+     .extern cpy
+     mylabel: .extern test
+     .extern 
+     .extern
+
 

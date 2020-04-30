@@ -101,7 +101,7 @@ int expect_non_EOL_WS (char** ptr){
 return directitve type, 0 if failed*/ 
 int validate_directive (char* str){
     int i;
-    for (i=0; i<MAX_FUNCTION; i++){
+    for (i=0; i<NUM_DIRECTIVE; i++){
         if (!strcmp(str,directive[i])) return i+1;
     }
     return 0;
@@ -134,6 +134,42 @@ int read_string (char** ptr, char** line_str){
     return 1;
 }
 
+
+/*Read next word and store at str pointer.
+return 0 if failed, 1 if passed*/
+
+int read_next_word (char** ptr,line* line, char** str_temp){
+    
+    char str[MAX_Label_Length+1];
+    int i=0;
+    
+    if (isdigit(CUR_CHAR)) {print_error(ERROR_LABEL_CANNOT_START_WITH_NUM,line); return 0;}
+    if (!expect_non_EOL_WS(ptr)) {print_error(ERROR_LABEL_ON_EMPTY,line); return 0;}
+    if (CUR_CHAR =='\"') {print_error(ERROR_LABEL_NO_BRACKET,line); return 0;}
+    while (isalnum (CUR_CHAR)) {
+        str[i] = CUR_CHAR;
+        i++;
+        (*ptr)++;
+        if (i>MAX_Label_Length) {print_error(ERROR_LABEL_NAME_TOO_LONG, line); return 0;}
+    }
+    str[i]='\0';
+    *str_temp = str_dup(str);
+    
+    return 1;
+
+}
+
+
+
+/*Check if label identical to system words,
+return 0 if failed, 1 if operation, 2 if directive, 3 if registery*/ 
+int check_label (char* str){
+    int i;
+    for (i=0; i<NUM_OPS;i++) if (!strcmp(str,ops[i])) return 1;
+    for (i=0; i<NUM_DIRECTIVE;i++) if (!strcmp(str,directive[i])) return 2;
+    for (i=0; i<NUM_REGS;i++) if (!strcmp(str,regs[i])) return 3;
+    return 0;
+}
 
 /*Read current directive and store results,
 return 1 if directive is valid and 0 if failed*/ 
@@ -198,11 +234,37 @@ int read_directive (char** ptr, line* line){
 
         }
     default:
-        break;
+        {
+            int word_type;
+            char str[MAX_Label_Length+1];
+            char* str_ptr = str;
+            int i=0;
+
+            if (isdigit(CUR_CHAR)) {print_error(ERROR_LABEL_CANNOT_START_WITH_NUM,line); return 0;}
+            if (!expect_non_EOL_WS(ptr)) {print_error(ERROR_LABEL_ON_EMPTY,line); return 0;}
+            if (CUR_CHAR =='\"') {print_error(ERROR_LABEL_NO_BRACKET,line); return 0;}
+            while (isalnum (CUR_CHAR)) {
+                str[i++] = CUR_CHAR;
+                (*ptr)++;
+                if (i>MAX_Label_Length) {print_error(ERROR_LABEL_NAME_TOO_LONG, line); return 0;}
+            }
+            str[i]='\0';
+            if (expect_non_EOL_WS(ptr)) {print_error(ERROR_LABEL_INVALID_FORMAT,line);return 0;}
+                if ((word_type = check_label(str))) {
+                    if (word_type==1) {print_error(ERROR_LABEL_NAME_IDENTICAL_OP_NAME,line);return 0;}
+                    if (word_type==2) {print_error(ERROR_LABEL_NAME_IDENTICAL_DIR_MAME,line);return 0;}                        if (word_type==3) {print_error(ERROR_LABEL_NAME_IDENTICAL_REG_MAME,line);return 0;}
+                }
+            else {
+                line->str = str_dup(str);
+                printf ("Current STring is %s :", line->str);
+                return 1;
+            }
+        }
     }
 
 
 }
+
 
 
 /*Read current label and store results,
@@ -210,6 +272,7 @@ return 1 if label valid and 0 if failed*/
 int read_label (char** ptr, line* line){
     char str[MAX_Label_Length+1];
     int i = 0;
+    int word_type;
     if (isdigit(CUR_CHAR)) {print_error(ERROR_LABEL_CANNOT_START_WITH_NUM,line); return 0;}
     while (isalnum (CUR_CHAR)) {
         str[i++] = CUR_CHAR;
@@ -217,6 +280,12 @@ int read_label (char** ptr, line* line){
         if (i>MAX_Label_Length) {print_error(ERROR_LABEL_NAME_TOO_LONG, line); return 0;}
     }
     if (CUR_CHAR != ':') {print_error(ERROR_LABEL_NAME_NOT_LETTER_OR_NUM,line);return 0;}
+    str[i]= '\0';
+    if ((word_type = check_label(str))) {
+        if (word_type==1) {print_error(ERROR_LABEL_NAME_IDENTICAL_OP_NAME,line);return 0;}
+        if (word_type==2) {print_error(ERROR_LABEL_NAME_IDENTICAL_DIR_MAME,line);return 0;}
+        if (word_type==3) {print_error(ERROR_LABEL_NAME_IDENTICAL_REG_MAME,line);return 0;}
+    }
     else {
         line->label_name = str_dup(str);
         line->label_flag = 1;
@@ -224,6 +293,105 @@ int read_label (char** ptr, line* line){
     }
 
 }
+
+
+/*Check if operation is valid and to which group it belongs
+/*return 0 if not valid, 1 if one operand, 2 if two operands and 3 if no operands*/
+int check_oper_group (char* str){
+    int i;
+    for (i=0;i<NUM_OPS;i++){
+        if (!strcmp(str,ops[i])) {
+            if (i>=0 && i<=4) return 2;
+            if (i>=5 && i<=13) return 1;
+            if (i==14 || i==15) return 3;
+         }
+    }
+    return 0;
+
+}
+
+
+/*read next operand and store results
+return 0 if failed, 1 if passed */
+int read_operand (char** ptr,line* line, operand* target){
+    long int temp_num;
+    int label_group;
+    char* str;
+    if (CUR_CHAR=='#'){
+        (*ptr)++;
+        if (isdigit(CUR_CHAR) || CUR_CHAR != '+' || CUR_CHAR != '-'); {
+            if (!read_next_num(ptr, &temp_num)){
+                if (CUR_CHAR=='\0' || CUR_CHAR=='\n') {print_error (ERROR_EXPECTED_NUM_EOL,line); return 0;}
+                else if (CUR_CHAR==',') {print_error (ERROR_EXPECTED_NUM_COMMA,line); return 0;}
+                else {print_error (ERROR_EXPECTED_NUM,line); return 0;}
+            }
+        }
+        skip_space(ptr);
+        if (CUR_CHAR == '.') {print_error (ERROR_EXPECTED_NUM_INT,line); return 0;}
+        target->value = (int) temp_num;
+        target->type = 0;
+        return 1;
+    }
+    else if (CUR_CHAR=='&'){
+        target->type = 2;
+        (*ptr)++;
+    };
+    if (!read_next_word(ptr, line, &str)) return 0;
+    label_group = check_label (str);
+    if (label_group==3) target->type = 3;
+    else if (label_group==0) target->type = 1;
+    else if (label_group == 2) {print_error (ERROR_LABEL_NAME_IDENTICAL_DIR_MAME,line); return 0;}
+    else {print_error (ERROR_LABEL_NAME_IDENTICAL_OP_NAME,line); return 0;}
+    target->name = str_dup(str);
+    return 1;
+}
+
+
+/*read operands and store results
+return 0 if failed, 1 if passed */
+int read_operands (char** ptr,line* line){
+
+    switch (line->num_oper)
+    {
+    case 3:
+        if (expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_INVALID_FORMAT,line); return 0;} 
+        return 1;
+    case 1:
+        if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_NONE_EOL,line); return 0;}
+        if (!read_operand(ptr, line, &line->op_dst)) { return 0;}
+        if (expect_non_EOL_WS) {print_error (ERROR_OPERATION_EXPECTED_EOL,line); return 0;}
+        return 1;
+
+
+        
+    default:
+        break;
+    }
+}
+
+/*read current operation and check if valid, store results on line struct
+return 0 if failed, 1 if passed */
+int read_ops (char** ptr, line* line){
+    char str[MAX_OPS_Char_Length+1];
+    int i=0;
+    int oper_group;
+    while (isalpha(CUR_CHAR)){
+        str[i++]=CUR_CHAR;
+        (*ptr)++;
+        if (i>MAX_OPS_Char_Length) {print_error (ERROR_OPERATION_INVALID_FORMAT,line); return 0;}
+    }
+    str[i] = '\0';
+    
+    line->num_oper = check_oper_group (str);
+    if (!line->num_oper) {print_error (ERROR_OPERATION_INVALID_FORMAT,line); return 0;}
+    line->op_type = 1;
+    line->str = str_dup (str);
+    return 1;
+}
+    
+
+
+
 
 /* main function to parse current line
 return 0 if parsing failed, 1 if passed*/
@@ -240,12 +408,15 @@ int read_next_line (char** ptr, line* line){
             // printf ("label is : %s", line->label_name);
             }
     }
-    if (CUR_CHAR='.'){
+    if (CUR_CHAR=='.'){
         (*ptr)++;
         if (!read_directive (ptr,line)) return 0;
         printf ("Directive is: %d", line->directive_type);
         return 1;
     }
+    if (!read_ops (ptr,line)) {return 0;}
+    if (!read_operands (ptr,line)) {return 0;}
+    
 
 }
 int main (){
@@ -268,8 +439,5 @@ int main (){
         if (read_next_line (&ptr, &cur_line)) printf ("Passed\n");
     }
         
-        
-
-
-return 0;
+    return 0;
 }
