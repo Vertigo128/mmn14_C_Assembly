@@ -28,6 +28,13 @@ typedef struct symbol {
     struct symbol* next;
 } symbol;
 
+typedef struct data_image {
+    int type; /* 0 for data int, 1 for char */
+    int counter;
+    void* value;
+    struct data_image* next;
+} data_image;
+
 typedef struct error_stat {
     char* err_code;
     int failed;
@@ -63,3 +70,26 @@ typedef struct {
     void* word1;
     void* word2;     
 } first_word;
+
+
+
+typedef struct {
+	/* Assembler tables */
+    list* symbol;
+	// list* entry_table; /* List of type 'entry_with_line_num' */
+	// list* extern_table; /* List of type 'char*' */
+	// list* extern_refs_table; /* List of type 'ref_in_code' */
+	// list* data_labels_table; /* List of type 'data_label' */
+	// list* code_labels_table; /* List of type 'code_label' */
+	// list* code_label_refs_table; /* List of type 'ref_in_code' */
+	// cpu_word* data_table; /* Points to start of data table */
+	// unsigned int data_counter;
+	// cpu_word* code_table; /* Points to start of code table */
+	// unsigned int code_counter;
+
+	// /* Current file info */
+	// char* current_file_name;
+	// FILE* current_file_ptr;
+	// int current_line_num;
+	// int failed;
+} status;

@@ -10,6 +10,7 @@
 #define NUM_DIRECTIVE 4
 #define NUM_OPS 16
 #define NUM_REGS 7
+#define CODE_START 100
 
 // #define reg_mex - 7
 // #define reg_size - 24 ?

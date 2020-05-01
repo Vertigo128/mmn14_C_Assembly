@@ -9,6 +9,7 @@
 #define ERROR_LABEL_NAME_IDENTICAL_REG_MAME "ERROR: Label name can't be equal to register names on line %d in file %s\n"
 #define ERROR_LABEL_NAME_IDENTICAL_DIR_MAME "ERROR: Label name can't be equal to directive names on line %d in file %s\n"
 #define ERROR_LABEL_NO_BRACKET "ERROR: No brackets needed on directive label declaration on line %d in file %s\n"
+#define ERROR_LABEL_EXIST "ERROR: Label already exist on line %d in file %s\n"
 
 /* Operations */
 #define ERROR_OPERATION_INVALID_FORMAT "ERROR: Unknown operation on line %d in file %s\n"

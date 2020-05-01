@@ -63,6 +63,22 @@ long int* int_dup (long int* num) {
 }
 
 /* Duplicates a string to allocated memory */
+char* charecter_dup (char str) {
+	char* str_cpy;
+
+	str_cpy = malloc(sizeof(char));
+	if (!str_cpy) {
+		fprintf(stderr, ERROR_OUT_OF_MEMORY);
+		exit(1);
+	}
+
+	*str_cpy =  str;
+
+	return str_cpy;
+}
+
+
+/* Duplicates a string to allocated memory */
 char* str_dup (char* str) {
 	char* str_cpy;
 
@@ -537,23 +553,209 @@ void print_line (line* line){
 
 }
 
+
+
+/* Check if current label already exist on symbol table
+return 0 if found, return 1 if passed without duplication */
+int check_dup_label (char* str, symbol* symbol_table) {
+    symbol* ptr = symbol_table;
+    if (ptr==NULL) return 1;
+    while (ptr->next != NULL) {
+        if (!strcmp(ptr->name,str)) return 0;
+        ptr = ptr->next;
+    }
+    if (!strcmp(ptr->name,str)) return 0;
+    return 1;
+}
+
+/* Adds an element to a linked list pointer, and if it doesn't exist (ie. NULL), creates it and assigned to pointer */
+void update_symbol (symbol** symbol_table, line* line,int DC) {
+	
+    if (*symbol_table == NULL) {
+		*symbol_table = calloc(1, sizeof(symbol));
+
+		/* Check if calloc failed */
+		if (*symbol_table == NULL) {
+			fprintf(stderr, ERROR_OUT_OF_MEMORY);
+			exit(1);
+		}
+
+		/* Put new values in list node */
+		(*symbol_table)->value = DC;
+        (*symbol_table)->type = line->directive_type;
+        (*symbol_table)->name = str_dup (line->label_name);
+        (*symbol_table)->next = NULL;
+
+	} else {
+		symbol* ptr = *symbol_table;
+
+		/* Skip to last element */
+		while (ptr->next != NULL) {
+			ptr = ptr->next;
+		}
+
+		ptr->next = calloc(1, sizeof(list));
+
+		/* Check if calloc failed */
+		if (ptr->next == NULL) {
+			fprintf(stderr, ERROR_OUT_OF_MEMORY);
+			exit(1);
+		}
+
+		/* Put new values in list node */
+		ptr->next->value = DC;
+        ptr->next->type = line->directive_type;
+        ptr->next->name = str_dup (line->label_name);
+        ptr->next->next = NULL;
+	}
+}
+
+/*Add current line data numbers to data image table
+return the new DC counter*/
+int add_data_image (list* cur_line_data, data_image** data_img, int DC){
+
+
+    if (*data_img == NULL) {
+		*data_img = calloc(1, sizeof(data_image));
+
+		/* Check if calloc failed */
+		if (*data_img == NULL) {
+			fprintf(stderr, ERROR_OUT_OF_MEMORY);
+			exit(1);
+		}
+
+		// /* Put new values in list node */
+        //     (*data_img)->counter = DC++;
+        //     (*data_img)->type = 1;
+        //     (*data_img)->value = int_dup( cur_line_data->value);
+        //     (*data_img)->next = NULL;
+        //     if (cur_line_data->next != NULL) cur_line_data = cur_line_data->next;
+
+    }
+    data_image* ptr = *data_img;
+
+    while (ptr->next != NULL) {
+        ptr = ptr->next;
+    }
+    while (cur_line_data->next != NULL) {
+            ptr->next = calloc(1, sizeof(symbol));
+
+            /* Check if calloc failed */
+            if (ptr->next == NULL) {
+                fprintf(stderr, ERROR_OUT_OF_MEMORY);
+                exit(1);
+            }
+            ptr->next->counter = DC++;
+            ptr->next->type = 1;
+            ptr->next->value = int_dup( cur_line_data->value);
+            ptr->next = NULL;
+            cur_line_data = cur_line_data->next;
+    }
+
+    ptr->next = calloc(1, sizeof(symbol));
+    if (ptr->next == NULL) { /* Check if calloc failed */
+        fprintf(stderr, ERROR_OUT_OF_MEMORY);
+        exit(1);
+    }
+    ptr->next->counter = DC++;
+    ptr->next->type = 1;
+    ptr->next->value = int_dup( cur_line_data->value);
+    ptr->next = NULL;
+    return DC;
+
+    
+}
+    
+    
+    // data_image* ptr_img = data_img;
+    // list* ptr_data_line = cur_line_data;
+    // while (ptr_img->next != NULL) {
+    //     ptr_img = ptr_img->next;
+    // }
+    // do{
+    //         ptr_img->next = calloc(1, sizeof(symbol));
+
+    //         /* Check if calloc failed */
+    //         if (ptr_img->next == NULL) {
+    //             fprintf(stderr, ERROR_OUT_OF_MEMORY);
+    //             exit(1);
+    //         }
+    //         ptr_img->counter = DC++;
+    //         ptr_img->type = 1;
+    //         ptr_img->value = int_dup( ptr_data_line->value);
+    //         ptr_img = ptr_img->next;
+    //         ptr_data_line = ptr_data_line->next;
+    // }while (ptr_data_line->next != NULL);
+    // ptr_img->counter = DC++;
+    // ptr_img->type = 1;
+    // ptr_img->value = int_dup( ptr_data_line->value);
+    // return DC;
+
+    // }
+
+/*Add current line string to data image table
+return the new DC counter*/
+int add_string_image (char* cur_line_string, data_image* data_img, int DC){
+    data_image* ptr_img = data_img;
+
+    while (ptr_img->next != NULL) {
+        ptr_img = ptr_img->next;
+    }
+    do{
+            ptr_img->next = calloc(1, sizeof(symbol));
+
+            /* Check if calloc failed */
+            if (ptr_img->next == NULL) {
+                fprintf(stderr, ERROR_OUT_OF_MEMORY);
+                exit(1);
+            }
+            ptr_img->next->counter = DC++;
+            ptr_img->next->type = 2;
+            ptr_img->next->value = charecter_dup(*cur_line_string);
+            ptr_img = ptr_img->next;
+            cur_line_string++;
+    }while (*cur_line_string != '\0');
+    ptr_img->counter = DC++;
+    ptr_img->type = 2;
+    ptr_img->value = charecter_dup('0');
+    return DC;
+    
+}
+
+
 int main (){
     char str[Max_Line_Length +1 ] ;
-    // = "  Mylabel:   mov #11  , LAbal1232";
     char *ptr = str;
-    
     line cur_line;
-    cur_line.filename = "test1";
-    cur_line.line_num = 0;
+    int DC = 0;
+    int IC = CODE_START;
+    data_image* data_ptr = NULL;
+    symbol* symbol_table_ptr =NULL;
 
     printf ("Enter String:\n");
+    
     while (ptr = fgets (str,Max_Line_Length+1,stdin)) {
         printf ("%s", ptr);
         initilize_line (&cur_line);
 
-        if (read_next_line (&ptr, &cur_line)) print_line (&cur_line);
+        if (read_next_line (&ptr, &cur_line)) {
+            print_line (&cur_line);
+            if (cur_line.directive_type==1 || cur_line.directive_type==2) {
+                if (cur_line.label_flag==1) {
+                    if (!check_dup_label(cur_line.label_name, symbol_table_ptr)) {print_error (ERROR_LABEL_EXIST,&cur_line); continue;}
+                    update_symbol(&symbol_table_ptr,&cur_line,DC);
+                }
+                if (cur_line.directive_type==1){
+                    DC = add_data_image (cur_line.data, &data_ptr, DC);
+                }
+                // if (cur_line.directive_type==2){
+                //     DC = add_string_image (cur_line.str, &data, DC);
+                // }
+            }
+        }
 
     }
         
     return 0;
 }
+
