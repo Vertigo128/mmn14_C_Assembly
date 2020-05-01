@@ -15,6 +15,9 @@
 #define ERROR_OPERATION_EXPECTED_SPACE "ERROR: Expected space after operation on line %d in file %s\n"
 #define ERROR_OPERATION_EXPECTED_EOL "ERROR: Expected end of line on line %d in file %s\n"
 #define ERROR_OPERATION_EXPECTED_NONE_EOL "ERROR: missing data for operation reading on line %d in file %s\n"
+#define ERROR_OPERATION_MISSING "ERROR: missing operand, line ended on line %d in file %s\n"
+#define ERROR_OPERATION_MISSING_COMMA "ERROR: missing comma between operands on line %d in file %s\n"
+#define ERROR_OPERATION_INVALID_ADDRESS "ERROR: Invalid operand address type for current operation on line %d in file %s\n"
 
 
 /* general */

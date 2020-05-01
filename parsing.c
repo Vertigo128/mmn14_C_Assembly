@@ -45,7 +45,22 @@ void list_add_element (list** linked_list, void* data) {
 }
 
 
+/* Duplicates a long integer to allocated memory */
+long int* int_dup (long int* num) {
+	long int* num_cpy;
 
+	if (!num)
+		return NULL;
+
+	num_cpy = malloc(sizeof((long int) num));
+	if (!num_cpy) {
+		fprintf(stderr, ERROR_OUT_OF_MEMORY);
+		exit(1);
+	}
+    *num_cpy = (long int) *num;
+
+	return num_cpy;
+}
 
 /* Duplicates a string to allocated memory */
 char* str_dup (char* str) {
@@ -196,6 +211,7 @@ int read_directive (char** ptr, line* line){
     case 1: /*reading data numbers*/
         do{
             long int temp_num,garbage_num;
+            long int* temp_num_ptr;
             comma_flag = 0;
             skip_space(ptr);
             if (isdigit(CUR_CHAR) || CUR_CHAR != '+' || CUR_CHAR != '-'); {
@@ -214,9 +230,10 @@ int read_directive (char** ptr, line* line){
                 (*ptr)++;
             }
             if (temp_num>=MAX_Data_Value || temp_num<=MIN_Data_Value) {print_error (ERROR_NUM_RANGE,line); return 0;}
-            list_add_element (&line->data, &temp_num);
+	        
+            temp_num_ptr = int_dup(&temp_num);
+            list_add_element (&line->data, temp_num_ptr);
         }while (comma_flag==1);
-        // printf ("First num on data is : %ld", *(long int*) line->data->value);
         return 1;
     case 2: /*reading string */
         if (CUR_CHAR != '\"') {print_error (ERROR_EXPECTED_DOUBLE_BRACKET,line); return 0;}
@@ -229,7 +246,6 @@ int read_directive (char** ptr, line* line){
         else {
             skip_space(ptr);
             if (CUR_CHAR != '\0' && CUR_CHAR != '\n') {print_error (ERROR_STRING_EXPECTED_EOL,line); return 0;}
-            printf ("Current STring is %s :", line->str);
             return 1;
 
         }
@@ -256,7 +272,6 @@ int read_directive (char** ptr, line* line){
                 }
             else {
                 line->str = str_dup(str);
-                printf ("Current STring is %s :", line->str);
                 return 1;
             }
         }
@@ -296,17 +311,17 @@ int read_label (char** ptr, line* line){
 
 
 /*Check if operation is valid and to which group it belongs
-/*return 0 if not valid, 1 if one operand, 2 if two operands and 3 if no operands*/
+/*return 3 if not valid, 1 if one operand, 2 if two operands and 0 if no operands*/
 int check_oper_group (char* str){
     int i;
     for (i=0;i<NUM_OPS;i++){
         if (!strcmp(str,ops[i])) {
             if (i>=0 && i<=4) return 2;
             if (i>=5 && i<=13) return 1;
-            if (i==14 || i==15) return 3;
+            if (i==14 || i==15) return 0;
          }
     }
-    return 0;
+    return 3;
 
 }
 
@@ -328,6 +343,7 @@ int read_operand (char** ptr,line* line, operand* target){
         }
         skip_space(ptr);
         if (CUR_CHAR == '.') {print_error (ERROR_EXPECTED_NUM_INT,line); return 0;}
+        if (temp_num >= MAX_NUM_Value || temp_num <= MIN_NUM_Value) {print_error (ERROR_NUM_RANGE,line); return 0;}
         target->value = (int) temp_num;
         target->type = 0;
         return 1;
@@ -338,8 +354,13 @@ int read_operand (char** ptr,line* line, operand* target){
     };
     if (!read_next_word(ptr, line, &str)) return 0;
     label_group = check_label (str);
-    if (label_group==3) target->type = 3;
-    else if (label_group==0) target->type = 1;
+    if (label_group==3) {
+        if (target->type == 2) {print_error (ERROR_LABEL_NAME_IDENTICAL_REG_MAME,line); return 0;} 
+        target->type = 3;
+    }
+    else if (label_group==0){
+        if  (target->type != 2) target->type = 1;
+    } 
     else if (label_group == 2) {print_error (ERROR_LABEL_NAME_IDENTICAL_DIR_MAME,line); return 0;}
     else {print_error (ERROR_LABEL_NAME_IDENTICAL_OP_NAME,line); return 0;}
     target->name = str_dup(str);
@@ -350,22 +371,27 @@ int read_operand (char** ptr,line* line, operand* target){
 /*read operands and store results
 return 0 if failed, 1 if passed */
 int read_operands (char** ptr,line* line){
-
     switch (line->num_oper)
     {
-    case 3:
+    case 0:
         if (expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_INVALID_FORMAT,line); return 0;} 
         return 1;
     case 1:
         if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_NONE_EOL,line); return 0;}
         if (!read_operand(ptr, line, &line->op_dst)) { return 0;}
-        if (expect_non_EOL_WS) {print_error (ERROR_OPERATION_EXPECTED_EOL,line); return 0;}
+        if (expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_EOL,line); return 0;}
+        return 1;
+    case 2:
+        if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_NONE_EOL,line); return 0;}
+        if (!read_operand(ptr, line, &line->op_src)) { return 0;}
+        if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_MISSING,line); return 0;}
+        if (CUR_CHAR != ',') {print_error (ERROR_OPERATION_MISSING_COMMA,line); return 0;}
+        (*ptr)++;
+        if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_MISSING,line); return 0;}
+        if (!read_operand(ptr, line, &line->op_dst)) { return 0;}
+        if (expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_EOL,line); return 0;}
         return 1;
 
-
-        
-    default:
-        break;
     }
 }
 
@@ -383,15 +409,67 @@ int read_ops (char** ptr, line* line){
     str[i] = '\0';
     
     line->num_oper = check_oper_group (str);
-    if (!line->num_oper) {print_error (ERROR_OPERATION_INVALID_FORMAT,line); return 0;}
+    if (line->num_oper==3) {print_error (ERROR_OPERATION_INVALID_FORMAT,line); return 0;}
     line->op_type = 1;
     line->str = str_dup (str);
     return 1;
 }
     
+/*return the address type group for current operation
+return 0 if failed, unique value for each type */
+int check_oper_address_group (char* str) {
+    int i;
+    for (i=0;i<NUM_OPS;i++){
+        if (!strcmp(str,ops[i])) {
+            if (i==0 || i==2 || i==3) return 1;
+            if (i==1) return 2;
+            if (i==4) return 3;
+            if ((i>=5 && i<=8) || i==12) return 4;
+            if (i>=9 && i<=11) return 5;
+            if (i==13) return 6;
+            if (i==14 || i==15) return 7;
+         }
+    }
+    return 0;
+
+}
 
 
 
+/*read if operands address type is valid for current operation
+return 0 if failed, 1 if passed */
+int check_valid_operands (line* line){
+    int src_t = line->op_src.type;
+    int dst_t = line->op_dst.type;
+    int oper_group;
+    oper_group = check_oper_address_group(line->str);
+    switch (oper_group)
+    {
+    case 1:
+        if ((src_t==0 || src_t == 1 || src_t ==3) && (dst_t==1 || dst_t==3)) return 1;
+        break;
+    case 2:
+        if ((src_t==0 || src_t == 1 || src_t ==3) && (dst_t==0 || dst_t==1 || dst_t==3)) return 1;
+        break;
+    case 3:
+        if ((src_t == 1) && (dst_t==1 || dst_t==3)) return 1;
+        break;
+    case 4:
+        if (dst_t==1 || dst_t==3) return 1;
+        break;
+    case 5:
+        if (dst_t==1 || dst_t==2) return 1;
+        break;
+    case 6:
+        if (dst_t==0 || dst_t==1 || dst_t == 3) return 1;
+        break;
+    case 7:
+        return 1;
+    default:
+        return 0;
+    }
+    return 0;
+}
 
 /* main function to parse current line
 return 0 if parsing failed, 1 if passed*/
@@ -405,20 +483,60 @@ int read_next_line (char** ptr, line* line){
         if (read_label(ptr,line)) {
             (*ptr)++;
             if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_LABEL_EMPTY,line); return 0;}
-            // printf ("label is : %s", line->label_name);
             }
     }
     if (CUR_CHAR=='.'){
         (*ptr)++;
         if (!read_directive (ptr,line)) return 0;
-        printf ("Directive is: %d", line->directive_type);
+        // printf ("Directive is: %d", line->directive_type);
         return 1;
     }
     if (!read_ops (ptr,line)) {return 0;}
     if (!read_operands (ptr,line)) {return 0;}
+    if (!check_valid_operands(line)) {print_error (ERROR_OPERATION_INVALID_ADDRESS,line); return 0;}
+    line->op_type = 1;
+    return 1;
     
 
 }
+
+/* Initilize current line parsing struct */
+void initilize_line (line* line){
+    line->op_dst.type = 0;
+    line->op_src.type = 0;
+    line->label_flag = 0;
+    line->data = NULL;
+    line->str = NULL;
+    line->op_src.name = NULL;
+    line->op_dst.name = NULL;
+    line->op_src.value = 0;
+    line->op_dst.value = 0;
+}
+
+/* Initilize current line parsing struct */
+void print_line (line* line){
+    
+    if (line->label_flag==1)  ("Label Flag is: %d, name is %s\n",line->label_flag, line->label_name);
+
+    if (line->op_type==1) {
+        printf ("Oper name: %s\n",line->str);
+        printf ("Num ops: %d\n",line->num_oper);
+        printf ("Src type: %d\n",line->op_src.type);        
+        printf ("Dest type: %d\n",line->op_dst.type);
+        printf ("Src value: %d\n",line->op_src.value);        
+        printf ("Dest value: %d\n",line->op_dst.value);
+        printf ("Src name: %s\n",line->op_src.name);        
+        printf ("Dest name: %s\n",line->op_dst.name);
+
+    }
+    if (line->op_type==0){
+        printf ("Directive_type: %d\n",line->directive_type);
+        if (line->directive_type==1) printf ("First Num is : %ld\n",*(long int*) line->data->value);
+        else printf ("string/directive lable is : %s\n",line->str);
+    }
+
+}
+
 int main (){
     char str[Max_Line_Length +1 ] ;
     // = "  Mylabel:   mov #11  , LAbal1232";
@@ -431,12 +549,10 @@ int main (){
     printf ("Enter String:\n");
     while (ptr = fgets (str,Max_Line_Length+1,stdin)) {
         printf ("%s", ptr);
-        cur_line.error.failed = 0;
-        cur_line.label_flag = 0;
-        // cur_line.data->next = NULL;
-        // cur_line.data->value = NULL;
-        cur_line.data = NULL;
-        if (read_next_line (&ptr, &cur_line)) printf ("Passed\n");
+        initilize_line (&cur_line);
+
+        if (read_next_line (&ptr, &cur_line)) print_line (&cur_line);
+
     }
         
     return 0;

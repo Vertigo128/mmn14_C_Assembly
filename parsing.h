@@ -22,3 +22,5 @@ const char* ops[NUM_OPS] = {"mov","cmp","add","sub","lea","clr","not","inc","dec
 const char* directive[NUM_DIRECTIVE] = {"data", "string","entry","extern"};
 const char* regs[NUM_REGS] = {"r1", "r2","r3","r4","r5","r6","r7"};
 
+
+

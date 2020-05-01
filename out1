@@ -1,25 +1,52 @@
 Enter String:
-     .entry test
-Current STring is test :Directive is: 3Passed
-     .extern test
-Current STring is test :Directive is: 4Passed
-     .externtest
-ERROR: Expected space after directive on line  0 in file test1
-     .extern "test"
-ERROR: No brackets needed on directive label declaration on line 0 in file test1
-     .extern 1test"
-ERROR: Label name can't start with number on line 0 in file test1
-     .extern "1test"
-ERROR: No brackets needed on directive label declaration on line 0 in file test1
-     .extern r1
+     Mylabel: mov #1, #2
+ERROR: Invalid operand address type for current operation on line 0 in file test1
+     Mylabel: mov &a, b
+ERROR: Invalid operand address type for current operation on line 0 in file test1
+     Mylabel: mov #a, #1
+ERROR: Invalid number format on line 0 in file test1
+     Mylabel: mov #1, #a
+ERROR: Invalid number format on line 0 in file test1
+     Mylabel: mov &r1, #1
 ERROR: Label name can't be equal to register names on line 0 in file test1
-     .extern cpy
-Current STring is cpy :Directive is: 4Passed
-     mylabel: .extern test
-Current STring is test :Directive is: 4Passed
-     .extern 
-ERROR: Line ended on label declaration on line 0 in file test1
-     .extern
-ERROR: Line ended on label declaration on line 0 in file test1
+     Mylabel: mov &mov, #1
+ERROR: Label name can't be equal to operation names on line 0 in file test1
+     Mylabel: mov mov, #1
+ERROR: Label name can't be equal to operation names on line 0 in file test1
+     Mylabel: mov #1 #1
+ERROR: missing comma between operands on line 0 in file test1
+     Mylabel: mov #1
+ERROR: missing operand, line ended on line 0 in file test1
+     Mylabel: mov #112312341241 , #1
+ERROR: Number out of range on line 0 in file test1
+     Mylabel: mov      
+ERROR: missing data for operation reading on line 0 in file test1
+     Mylabel: clr
+ERROR: missing data for operation reading on line 0 in file test1
+     Mylabel: stop
+ERROR: Invalid operand address type for current operation on line 0 in file test1
+     Mylabel: mov #1 , #1, sd
+ERROR: Expected end of line on line 0 in file test1
+     Mylabel: clr #12, as
+ERROR: Expected end of line on line 0 in file test1
+     Mylabel: clr 123
+ERROR: Label name can't start with number on line 0 in file test1
+     Mylabel: clr #123
+ERROR: Invalid operand address type for current operation on line 0 in file test1
+     Mylabel: clr &abc
+ERROR: Invalid operand address type for current operation on line 0 in file test1
+     Mylabel: lea #123, abc 
+ERROR: Invalid operand address type for current operation on line 0 in file test1
+     Mylabel: lea abc, #123
+ERROR: Invalid operand address type for current operation on line 0 in file test1
+     Mylabel: lea abc, &abc
+ERROR: Invalid operand address type for current operation on line 0 in file test1
+     Mylabel: lea abc, r1
+Passed
+
+
+      
+
+
 
 

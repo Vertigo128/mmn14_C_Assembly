@@ -9,7 +9,7 @@ typedef struct list {
 } list;
 
 typedef struct {
-    int type; /* address type 0-3*/
+    int type; /* address type 0-3 */
     char* name;
     int value;
 }operand;

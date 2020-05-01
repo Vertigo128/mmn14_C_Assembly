@@ -1,13 +1,29 @@
-     .entry test
-     .extern test
-     .externtest
-     .extern "test"
-     .extern 1test"
-     .extern "1test"
-     .extern r1
-     .extern cpy
-     mylabel: .extern test
-     .extern 
-     .extern
+     Mylabel: mov #1, #2
+     Mylabel: mov &a, b
+     Mylabel: mov #a, #1
+     Mylabel: mov #1, #a
+     Mylabel: mov &r1, #1
+     Mylabel: mov &mov, #1
+     Mylabel: mov mov, #1
+     Mylabel: mov #1 #1
+     Mylabel: mov #1
+     Mylabel: mov #112312341241 , #1
+     Mylabel: mov      
+     Mylabel: clr
+     Mylabel: stop
+     Mylabel: mov #1 , #1, sd
+     Mylabel: clr #12, as
+     Mylabel: clr 123
+     Mylabel: clr #123
+     Mylabel: clr &abc
+     Mylabel: lea #123, abc 
+     Mylabel: lea abc, #123
+     Mylabel: lea abc, &abc
+     Mylabel: lea abc, r1
+
+
+      
+
+
 
 

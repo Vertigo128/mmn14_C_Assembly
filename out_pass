@@ -1,0 +1,123 @@
+Enter String:
+inc r4
+Oper name: inc
+Num ops: 1
+Src type: 0
+Dest type: 3
+Src value: 0
+Dest value: 0
+Src name: (null)
+Dest name: r4
+inc abc
+Oper name: inc
+Num ops: 1
+Src type: 0
+Dest type: 1
+Src value: 0
+Dest value: 0
+Src name: (null)
+Dest name: abc
+dec abc
+Oper name: dec
+Num ops: 1
+Src type: 0
+Dest type: 1
+Src value: 0
+Dest value: 0
+Src name: (null)
+Dest name: abc
+lea abc, abc
+Oper name: lea
+Num ops: 2
+Src type: 1
+Dest type: 1
+Src value: 0
+Dest value: 0
+Src name: abc
+Dest name: abc
+cmp #-223, #421
+Oper name: cmp
+Num ops: 2
+Src type: 0
+Dest type: 0
+Src value: -223
+Dest value: 421
+Src name: (null)
+Dest name: (null)
+cmp abc, #421
+Oper name: cmp
+Num ops: 2
+Src type: 1
+Dest type: 0
+Src value: 0
+Dest value: 421
+Src name: abc
+Dest name: (null)
+cmp r1, r1
+Oper name: cmp
+Num ops: 2
+Src type: 3
+Dest type: 3
+Src value: 0
+Dest value: 0
+Src name: r1
+Dest name: r1
+rts
+Oper name: rts
+Num ops: 0
+Src type: 0
+Dest type: 0
+Src value: 0
+Dest value: 0
+Src name: (null)
+Dest name: (null)
+jmp &avc
+Oper name: jmp
+Num ops: 1
+Src type: 0
+Dest type: 2
+Src value: 0
+Dest value: 0
+Src name: (null)
+Dest name: avc
+jmp avc
+Oper name: jmp
+Num ops: 1
+Src type: 0
+Dest type: 1
+Src value: 0
+Dest value: 0
+Src name: (null)
+Dest name: avc
+Mylabel: stop
+Oper name: stop
+Num ops: 0
+Src type: 0
+Dest type: 0
+Src value: 0
+Dest value: 0
+Src name: (null)
+Dest name: (null)
+Mylabel: lea abc, r1
+Oper name: lea
+Num ops: 2
+Src type: 1
+Dest type: 3
+Src value: 0
+Dest value: 0
+Src name: abc
+Dest name: r1
+.string "abc@DCZXC+}|\"
+Directive_type: 2
+string/directive lable is : abc@DCZXC+}|\
+.entry test
+Current STring is test :Directive_type: 3
+string/directive lable is : test
+.extern test
+Current STring is test :Directive_type: 4
+string/directive lable is : test
+Mylabel:    .data 11    ,22
+Directive_type: 1
+First Num is : 11
+Mylabel:    .data 11,   22Directive_type: 1
+First Num is : 11
