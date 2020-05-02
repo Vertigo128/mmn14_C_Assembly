@@ -1,0 +1,4 @@
+abc: .data 123
+cde: .string "abc"
+abc1: .data 456
+cde1: .string "def"

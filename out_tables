@@ -1,0 +1,40 @@
+Enter String:
+abc: .data 123
+
+ Symbols: val : 0, name : abc, type : 1
+ Data: type : 1, counter : 0  values is : 123
+cde: .string "abc"
+
+ Symbols: val : 0, name : abc, type : 1
+ Symbols: val : 1, name : cde, type : 2
+ Data: type : 1, counter : 0  values is : 123
+ Data: type : 2, counter : 1  values is : a 
+ Data: type : 2, counter : 2  values is : b 
+ Data: type : 2, counter : 3  values is : c 
+ Data: type : 2, counter : 4  values is : 0 
+abc1: .data 456
+
+ Symbols: val : 0, name : abc, type : 1
+ Symbols: val : 1, name : cde, type : 2
+ Symbols: val : 5, name : abc1, type : 1
+ Data: type : 1, counter : 0  values is : 123
+ Data: type : 2, counter : 1  values is : a 
+ Data: type : 2, counter : 2  values is : b 
+ Data: type : 2, counter : 3  values is : c 
+ Data: type : 2, counter : 4  values is : 0 
+ Data: type : 1, counter : 5  values is : 456
+cde1: .string "def"
+ Symbols: val : 0, name : abc, type : 1
+ Symbols: val : 1, name : cde, type : 2
+ Symbols: val : 5, name : abc1, type : 1
+ Symbols: val : 6, name : cde1, type : 2
+ Data: type : 1, counter : 0  values is : 123
+ Data: type : 2, counter : 1  values is : a 
+ Data: type : 2, counter : 2  values is : b 
+ Data: type : 2, counter : 3  values is : c 
+ Data: type : 2, counter : 4  values is : 0 
+ Data: type : 1, counter : 5  values is : 456
+ Data: type : 2, counter : 6  values is : d 
+ Data: type : 2, counter : 7  values is : e 
+ Data: type : 2, counter : 8  values is : f 
+ Data: type : 2, counter : 9  values is : 0 

@@ -3,5 +3,6 @@
         "type_traits": "cpp",
         "cmath": "cpp",
         "limits": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Enabled"
 }
