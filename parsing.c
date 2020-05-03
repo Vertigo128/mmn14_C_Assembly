@@ -220,6 +220,7 @@ int read_directive (char** ptr, line* line){
     if(!isspace(CUR_CHAR)) {print_error (ERROR_EXPECTED_SPACE_DIRECTIVE,line); return 0;}
     line->op_type = 0;
     line->directive_type = (direct);
+    if (direct == 3 || direct == 4) line->num_words = 0;
     skip_space(ptr);
 
     switch (line->directive_type)
@@ -362,10 +363,12 @@ int read_operand (char** ptr,line* line, operand* target){
         if (temp_num >= MAX_NUM_Value || temp_num <= MIN_NUM_Value) {print_error (ERROR_NUM_RANGE,line); return 0;}
         target->value = (int) temp_num;
         target->type = 0;
+        target->flag = 1;
         return 1;
     }
     else if (CUR_CHAR=='&'){
         target->type = 2;
+        target->flag = 1;
         (*ptr)++;
     };
     if (!read_next_word(ptr, line, &str)) return 0;
@@ -373,9 +376,10 @@ int read_operand (char** ptr,line* line, operand* target){
     if (label_group==3) {
         if (target->type == 2) {print_error (ERROR_LABEL_NAME_IDENTICAL_REG_MAME,line); return 0;} 
         target->type = 3;
+        target->flag = 1;
     }
     else if (label_group==0){
-        if  (target->type != 2) target->type = 1;
+        if  (target->type != 2) {target->type = 1, target->flag = 1;}
     } 
     else if (label_group == 2) {print_error (ERROR_LABEL_NAME_IDENTICAL_DIR_MAME,line); return 0;}
     else {print_error (ERROR_LABEL_NAME_IDENTICAL_OP_NAME,line); return 0;}
@@ -395,16 +399,19 @@ int read_operands (char** ptr,line* line){
     case 1:
         if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_NONE_EOL,line); return 0;}
         if (!read_operand(ptr, line, &line->op_dst)) { return 0;}
+        if (line->op_dst.type!=3) line->num_words++;
         if (expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_EOL,line); return 0;}
         return 1;
     case 2:
         if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_NONE_EOL,line); return 0;}
         if (!read_operand(ptr, line, &line->op_src)) { return 0;}
+        if (line->op_src.type!=3) line->num_words++;
         if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_MISSING,line); return 0;}
         if (CUR_CHAR != ',') {print_error (ERROR_OPERATION_MISSING_COMMA,line); return 0;}
         (*ptr)++;
         if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_MISSING,line); return 0;}
         if (!read_operand(ptr, line, &line->op_dst)) { return 0;}
+        if (line->op_dst.type!=3) line->num_words++;
         if (expect_non_EOL_WS(ptr)) {print_error (ERROR_OPERATION_EXPECTED_EOL,line); return 0;}
         return 1;
 
@@ -520,13 +527,19 @@ int read_next_line (char** ptr, line* line){
 void initilize_line (line* line){
     line->op_dst.type = 0;
     line->op_src.type = 0;
+    line->op_dst.flag = 0;
+    line->op_src.flag = 0;
+    line->op_src.value = 0;
+    line->op_dst.value = 0;
+    line->op_src.name = NULL;
+    line->op_dst.name = NULL;
     line->label_flag = 0;
     line->data = NULL;
     line->str = NULL;
-    line->op_src.name = NULL;
-    line->op_dst.name = NULL;
-    line->op_src.value = 0;
-    line->op_dst.value = 0;
+    line->num_words = 1;
+    line->error.failed =0;
+    line->directive_type=0;
+    line->op_type=0;
 }
 
 /* Initilize current line parsing struct */
@@ -569,7 +582,7 @@ int check_dup_label (char* str, symbol* symbol_table) {
 }
 
 /* Adds an element to a linked list pointer, and if it doesn't exist (ie. NULL), creates it and assigned to pointer */
-void update_symbol (symbol** symbol_table, line* line,int DC) {
+void update_symbol (symbol** symbol_table, line* line,int DC, char* target, int type) {
 	
     if (*symbol_table == NULL) {
 		*symbol_table = calloc(1, sizeof(symbol));
@@ -582,8 +595,8 @@ void update_symbol (symbol** symbol_table, line* line,int DC) {
 
 		/* Put new values in list node */
 		(*symbol_table)->value = DC;
-        (*symbol_table)->type = line->directive_type;
-        (*symbol_table)->name = str_dup (line->label_name);
+        (*symbol_table)->type = type;
+        (*symbol_table)->name = str_dup (target);
         (*symbol_table)->next = NULL;
 
 	} else {
@@ -604,8 +617,8 @@ void update_symbol (symbol** symbol_table, line* line,int DC) {
 
 		/* Put new values in list node */
 		ptr->next->value = DC;
-        ptr->next->type = line->directive_type;
-        ptr->next->name = str_dup (line->label_name);
+        ptr->next->type = type;
+        ptr->next->name = str_dup (target);
         ptr->next->next = NULL;
 	}
 }
@@ -711,24 +724,7 @@ int add_string_image (char* cur_line_string, data_image** data_img, int DC){
     
 }
 
-/* Debug helper function to print generated tables */
-void print_tables (symbol* symbol_table_ptr, data_image* data_ptr){
-    
-    while (symbol_table_ptr!=NULL) {
-        printf ("\n Symbols: val : %d, name : %s, type : %d", symbol_table_ptr->value, symbol_table_ptr->name, symbol_table_ptr->type);
-        if (symbol_table_ptr->next !=NULL) symbol_table_ptr= symbol_table_ptr ->next;
-        else break;
-    }
-    while (data_ptr!=NULL) {
-        printf ("\n Data: type : %d, counter : %d ", data_ptr->type, data_ptr->counter);
-        if (data_ptr->type==1) printf (" values is : %ld", *(long int*) data_ptr->value);
-        else if (data_ptr->type==2) printf (" values is : %c ", *(char*) data_ptr->value);
-        if (data_ptr->next !=NULL) data_ptr = data_ptr->next;
-        else break;
-    }
-    printf ("\n");
 
-}
 
 
 /* Function to free the symbol table memory*/
@@ -755,29 +751,376 @@ void freelist_data (data_image* *ptr){
 
 }
 
+/* Function to free the code table memory*/
+void freelist_code (generated_code* *ptr){
+    generated_code* temp_ptr;
+    while (*ptr){
+        temp_ptr = *ptr;
+        *ptr = temp_ptr->next;
+        free (temp_ptr);
+
+    }
+
+}
+
+/* Find the funct and op_code of current command */
+void find_funct_opcode (char* str, int* funct, int* op_code) {
+    int i;
+    for (i=0;i<NUM_OPS;i++){
+        if (!strcmp(str,ops[i])) {
+            if (i==0) {*funct = 0; *op_code = 0; return;}
+            else if (i==1) {*funct = 0; *op_code = 1; return;}
+            else if (i==2) {*funct = 1; *op_code = 2; return;}
+            else if (i==3) {*funct = 2; *op_code = 2; return;}
+            else if (i==4) {*funct = 0; *op_code = 4; return;}
+            else if (i==5) {*funct = 1; *op_code = 5; return;}
+            else if (i==6) {*funct = 2; *op_code = 5; return;}
+            else if (i==7) {*funct = 3; *op_code = 5; return;}
+            else if (i==8) {*funct = 4; *op_code = 5; return;}
+            else if (i==9) {*funct = 1; *op_code = 9; return;}
+            else if (i==10) {*funct = 2; *op_code = 9; return;}
+            else if (i==11) {*funct = 3; *op_code = 9; return;}
+            else if (i==12) {*funct = 0; *op_code = 12; return;}
+            else if (i==13) {*funct = 0; *op_code = 13; return;}
+            else if (i==14) {*funct = 0; *op_code = 14; return;}
+            else  {*funct = 0; *op_code = 15; return;}
+        
+         }
+    }
+
+}
+
+
+/* Write the first word code to the code table struct */
+int generate_first_word_code (line* line){
+    unsigned int ARE = 1<<2;
+    unsigned int funct;
+    unsigned int reg_src = 0;
+    unsigned int address_src =0 ;
+    unsigned int reg_dst = 0 ;
+    unsigned int address_dst = 0;
+    unsigned int opcode;
+    unsigned int word;
+
+    find_funct_opcode (line->str, &funct, &opcode);
+    // if (line->op_src.type == 3) reg_src = find_reg(line->op_src.name);
+    if (line->op_src.type == 3) reg_src = (int) (line->op_src.name[1]) - 48;
+    if (line->op_dst.type == 3) reg_dst = (int) (line->op_dst.name[1]) - 48;
+    address_src = line->op_src.type;
+    address_dst = line->op_dst.type;
+    reg_src <<= 13;
+    reg_dst <<= 8;
+    funct <<= 3;
+    address_src <<= 16;
+    address_dst <<= 11;
+    opcode <<=18;
+    word = ARE | funct | reg_dst | address_dst | reg_src | address_src | opcode; 
+    return word;
+}
+
+/* Helper Function to print to screen current word*/
+void print_word (int word){
+    int j=23;
+    int i;
+
+    for (i =1 << 23; i ; i>>=1, j--){
+        printf ("%c", word&i? '1' : '0');
+        // if (j==3 || j== 8 || j==11 || j== 13 || j==16 || j==18) printf ("|"); 
+    }
+    // printf ("\n");
+}
+
+
+/* write the generated code in the next available code list , advance IC by 1 */
+void write_first_word_code (unsigned int first_word,generated_code** code_ptr,int* IC){
+    if (*code_ptr == NULL) {
+		*code_ptr = calloc(1, sizeof(symbol));
+
+		/* Check if calloc failed */
+		if (*code_ptr == NULL) {
+			fprintf(stderr, ERROR_OUT_OF_MEMORY);
+			exit(1);
+		}
+		/* Put new values in list node */
+		(*code_ptr)->word = first_word;
+        (*code_ptr)->counter = *IC;
+        (*code_ptr)->next = NULL;
+        (*IC)++;
+
+	} else {
+        generated_code* ptr = *code_ptr;
+
+		/* Skip to last element */
+		while (ptr->next != NULL) {
+			ptr = ptr->next;
+		}
+
+		ptr->next = calloc(1, sizeof(list));
+
+		/* Check if calloc failed */
+		if (ptr->next == NULL) {
+			fprintf(stderr, ERROR_OUT_OF_MEMORY);
+			exit(1);
+		}
+
+		ptr->next->word = first_word;
+        ptr->next->counter = *IC;
+        ptr->next->next = NULL;
+        (*IC)++;
+    }
+
+}
+
+
+/* write the immidite number code in the next available code list, advance IC by 1 */
+void write_code_number (unsigned int number,generated_code** code_ptr,int* IC){
+
+    int ARE = 1<<2;
+    int calculated_num = (number << 3 | ARE);
+    
+
+    generated_code* ptr = *code_ptr;
+
+    /* Skip to last element */
+    while (ptr->next != NULL) {
+        ptr = ptr->next;
+    }
+
+    ptr->next = calloc(1, sizeof(list));
+
+    /* Check if calloc failed */
+    if (ptr->next == NULL) {
+        fprintf(stderr, ERROR_OUT_OF_MEMORY);
+        exit(1);
+    }
+
+    ptr->next->word = calculated_num;
+    ptr->next->counter = *IC;
+    ptr->next->next = NULL;
+    (*IC)++;
+   
+}
+
+/* add empty code line for second pass, advance IC by 1 */
+void write_code_skip (generated_code** code_ptr,int* IC){
+
+    generated_code* ptr = *code_ptr;
+
+    /* Skip to last element */
+    while (ptr->next != NULL) {
+        ptr = ptr->next;
+    }
+
+    ptr->next = calloc(1, sizeof(list));
+
+    /* Check if calloc failed */
+    if (ptr->next == NULL) {
+        fprintf(stderr, ERROR_OUT_OF_MEMORY);
+        exit(1);
+    }
+
+    ptr->next->counter = *IC;
+    ptr->next->next = NULL;
+    (*IC)++;
+   
+}
+
+
+/* Debug helper function to print generated tables */
+void print_tables (symbol* symbol_table_ptr, data_image* data_ptr, generated_code* code_ptr, external* external_ptr){
+    
+    while (symbol_table_ptr!=NULL) {
+        printf ("\n Symbols: val : %d, name : %s, type : %d, type_e : %d", symbol_table_ptr->value, symbol_table_ptr->name, symbol_table_ptr->type, symbol_table_ptr->type_e);
+        if (symbol_table_ptr->next !=NULL) symbol_table_ptr= symbol_table_ptr ->next;
+        else break;
+    }
+    while (data_ptr!=NULL) {
+        printf ("\n Data: type : %d, counter : %d", data_ptr->type, data_ptr->counter);
+        if (data_ptr->type==1) printf (" values is : %ld", *(long int*) data_ptr->value);
+        else if (data_ptr->type==2) printf (" values is : %c ", *(char*) data_ptr->value);
+        if (data_ptr->next !=NULL) data_ptr = data_ptr->next;
+        else break;
+    }
+
+    while (code_ptr!=NULL) {
+        printf ("\n Code: counter : %d, code :  " , code_ptr->counter);
+        print_word (code_ptr->word);
+        if (code_ptr->next !=NULL) code_ptr = code_ptr->next;
+        else break;
+    }
+
+    while (external_ptr!=NULL) {
+        printf ("\n External: counter : %d, code : %s " , external_ptr->value, external_ptr->name);
+        if (external_ptr->next !=NULL) external_ptr = external_ptr->next;
+        else break;
+    }
+    printf ("\n");
+
+}
+
+
+/* update symbol data table to add ICF to every data label value */
+void update_symbol_first_pass (symbol** symbol_table, int ICF) {
+	
+		symbol* ptr = *symbol_table;
+		while (ptr->next != NULL) {
+            if (ptr->type == 1 || ptr->type == 2) ptr->value += ICF;
+			ptr = ptr->next;
+		}
+        if (ptr->type == 1) ptr->value += ICF;
+	
+}
+
+/* update symbol data entry flag 
+return 0 if no symbol found, 1 if pass */
+int update_symbol_entry (symbol** symbol_table, char* str,int line, char* file){
+    symbol* ptr = *symbol_table;
+    int found_flag = 0;
+    while (ptr->next != NULL) {
+            if (!strcmp(str,ptr->name)) {
+                ptr->type_e = 1;
+                found_flag = 1;
+            }
+			ptr = ptr->next;
+		}
+    if (found_flag==0) {fprintf (stderr, ERROR_ENTRY_LABEL_NOT_FOUND, line, file ); return 0;}
+    return 1;
+
+}
+
+/* find current operand label in symbol table  
+return 0 if no symbol found, -1 if label is external and adress counter if found */
+int find_symbol_address (symbol** symbol_table, char* str){
+    
+    symbol* ptr = *symbol_table;
+
+    while (ptr->next != NULL) {
+        
+        if (!strcmp(str,ptr->name)) {
+            if (ptr->type != 4) return (ptr->value);
+            else return -1;
+        }
+        ptr = ptr->next;
+	}
+    if (!strcmp(str,ptr->name)) {
+            if (ptr->type != 4) return (ptr->value);
+            else return -1;
+        }
+    return 0;
+}
+
+
+/* Create and update external table */
+void update_external_table (external** external_ptr, int IC, char* str) {
+    if (*external_ptr == NULL) {
+		*external_ptr = calloc(1, sizeof(external));
+
+		/* Check if calloc failed */
+		if (*external_ptr == NULL) {
+			fprintf(stderr, ERROR_OUT_OF_MEMORY);
+			exit(1);
+		}
+		/* Put new values in list node */
+		(*external_ptr)->name = str_dup (str);
+        (*external_ptr)->value = IC;
+
+	} else {
+        external* ptr = *external_ptr;
+
+		/* Skip to last element */
+		while (ptr->next != NULL) {
+			ptr = ptr->next;
+		}
+
+		ptr->next = calloc(1, sizeof(list));
+
+		/* Check if calloc failed */
+		if (ptr->next == NULL) {
+			fprintf(stderr, ERROR_OUT_OF_MEMORY);
+			exit(1);
+		}
+
+		ptr->next->name = str_dup (str);
+        ptr->next->value = IC;
+        ptr->next->next = NULL;
+    }
+
+}
+
+
+/* write the second pass missing labels code in the next relevant code list , advance IC by 1 */
+
+void write_second_word (int symbol_address,int IC, int address_type, generated_code** code_ptr){
+    
+    int ARE;
+    int calculated_num;
+    if (symbol_address == -1) calculated_num = 1;
+    else {
+        ARE = 1<<address_type;
+        calculated_num =  (symbol_address<<3 | ARE);
+    }
+    
+    generated_code* ptr = *code_ptr;
+
+    while (ptr->counter != IC) {
+        ptr = ptr->next;
+    }
+
+    ptr->word = calculated_num;
+
+}
+
+
+void print_code (generated_code* ptr_code, data_image* data_ptr, int ICF){
+
+    while (data_ptr!=NULL) {
+        printf ("\n %7d ", (data_ptr->counter + ICF));
+        printf ("0x%6lx", *(unsigned long int*) data_ptr->value);
+        if (data_ptr->next !=NULL) data_ptr = data_ptr->next;
+        else break;
+    }
+    return;
+}
 
 int main (){
+    char* filename = "test_second_pass1";
+    FILE *fd1;
+
+
     char str[Max_Line_Length +1 ] ;
     char *ptr = str;
     line cur_line;
     int DC = 0;
     int IC = CODE_START;
+    unsigned int first_word; 
+    int i,j;
+    int ICF,DCF;
+    int error_flag = 0;
+    generated_code* code_ptr = NULL;
     data_image* data_ptr = NULL;
     symbol* symbol_table_ptr =NULL;
+    external* external_table_ptr = NULL;
 
     printf ("Enter String:\n");
     freelist_symbol (&symbol_table_ptr);
     freelist_data (&data_ptr);
-    while (ptr = fgets (str,Max_Line_Length+1,stdin)) {
+    freelist_code (&code_ptr);
+
+    if (!(fd1 = fopen (filename,"r"))){
+        printf ("error");
+        exit (0);
+    }
+    
+
+    while (ptr = fgets (str,Max_Line_Length+1,fd1)) {
         printf ("%s", ptr);
-        initilize_line (&cur_line);
+        initilize_line (&cur_line); /*TO DO ***** UPDATE LINE NUMBER*/
 
         if (read_next_line (&ptr, &cur_line)) {
-            // print_line (&cur_line);
             if (cur_line.directive_type==1 || cur_line.directive_type==2) {
                 if (cur_line.label_flag==1) {
                     if (!check_dup_label(cur_line.label_name, symbol_table_ptr)) {print_error (ERROR_LABEL_EXIST,&cur_line); continue;}
-                    update_symbol(&symbol_table_ptr,&cur_line,DC);
+                    update_symbol(&symbol_table_ptr,&cur_line,DC, cur_line.label_name,cur_line.directive_type);
                 }
                 if (cur_line.directive_type==1){
                     DC = add_data_image (cur_line.data, &data_ptr, DC);
@@ -786,11 +1129,101 @@ int main (){
                     DC = add_string_image (cur_line.str, &data_ptr, DC);
                 }
             }
-        print_tables(symbol_table_ptr,data_ptr);
-        }
+            else if (cur_line.directive_type==3) continue;
+            else if (cur_line.directive_type==4) update_symbol(&symbol_table_ptr,&cur_line,FIRST_PASS_EXTERN_VAL, cur_line.str,cur_line.directive_type);
+            else { /*Code command */
+                if (cur_line.label_flag==1) {
+                    if (!check_dup_label(cur_line.label_name, symbol_table_ptr)) {print_error (ERROR_LABEL_EXIST,&cur_line); continue;}
+                    update_symbol(&symbol_table_ptr,&cur_line,IC, cur_line.label_name,SYMBOL_DIRECTIVE_CODE);
+                }
+                first_word =  generate_first_word_code (&cur_line);
+                // print_word (first_word);
+                write_first_word_code (first_word,&code_ptr, &IC); 
+                if (cur_line.num_words==1);
+                else if (cur_line.op_src.flag==0){
+                    if (cur_line.op_dst.type==1 || cur_line.op_dst.type==2) write_code_skip(&code_ptr, &IC);
+                    if (cur_line.op_dst.type==0) write_code_number(cur_line.op_dst.value, &code_ptr, &IC);
+                }
+                else if (cur_line.op_src.flag==1){
+                    if (cur_line.op_src.type==1 || cur_line.op_src.type==2) write_code_skip(&code_ptr, &IC);
+                    if (cur_line.op_src.type==0) write_code_number(cur_line.op_src.value, &code_ptr, &IC);
+                    
+                    if (cur_line.op_dst.type==1 || cur_line.op_dst.type==2) write_code_skip(&code_ptr, &IC);
+                    if (cur_line.op_dst.type==0) write_code_number(cur_line.op_dst.value, &code_ptr, &IC);
+                }
+                 
 
+            }
+
+        }
+        if (cur_line.error.failed == 1) error_flag = 1; 
     }
-        
+    if (error_flag==1) return 1;
+    ICF = IC;
+    DCF = DC;
+    update_symbol_first_pass (&symbol_table_ptr, ICF);
+    print_tables(symbol_table_ptr,data_ptr, code_ptr,external_table_ptr);
+
+    /*Second Pass */
+    rewind (fd1);
+    IC = CODE_START;
+
+    while (ptr = fgets (str,Max_Line_Length+1,fd1)) {
+        initilize_line (&cur_line); /*TO DO ***** UPDATE LINE NUMBER*/
+        read_next_line (&ptr, &cur_line);
+        // if (cur_line.label_flag==1) continue;
+        if (cur_line.directive_type==1 || cur_line.directive_type==2 || cur_line.directive_type == 4) continue;
+        else if (cur_line.directive_type==3) {
+            if (!update_symbol_entry(&symbol_table_ptr, cur_line.str,cur_line.line_num, cur_line.filename));
+        }
+        else { /*Code only */
+            if (cur_line.num_words == 1) {IC++; continue;}
+            if (cur_line.op_src.flag==0 || cur_line.op_src.type==3 ){ 
+                if (cur_line.op_dst.type==1 || cur_line.op_dst.type==2) {
+                    int symbol_address = find_symbol_address (&symbol_table_ptr, cur_line.op_dst.name);
+                    if (!symbol_address) {
+                        fprintf (stderr, ERROR_LABEL_NOT_FOUND,cur_line.line_num, cur_line.filename);
+                        printf (ERROR_LABEL_NOT_FOUND,cur_line.line_num, cur_line.filename);
+                        break;
+                    }
+                    else if (symbol_address == -1 ) {update_external_table (&external_table_ptr, IC+1, cur_line.op_dst.name);};
+                    if (cur_line.op_dst.type==2) symbol_address = symbol_address - IC;
+                    write_second_word(symbol_address,IC+1,cur_line.op_dst.type, &code_ptr);
+                    
+                }
+            }
+            else { /*Two additional words */
+                if (cur_line.op_src.type==1 || cur_line.op_src.type==2) {
+                    int symbol_address = find_symbol_address (&symbol_table_ptr, cur_line.op_src.name);
+                    if (!symbol_address) {
+                        fprintf (stderr, ERROR_LABEL_NOT_FOUND,cur_line.line_num, cur_line.filename); 
+                        printf (ERROR_LABEL_NOT_FOUND,cur_line.line_num, cur_line.filename);
+                        break;}
+                    else if (symbol_address == -1 ) {update_external_table (&external_table_ptr, IC+1, cur_line.op_src.name);};
+                    if (cur_line.op_src.type==2) symbol_address = symbol_address - IC;
+                    write_second_word(symbol_address,IC+1,cur_line.op_src.type, &code_ptr);
+                    
+                }
+                if (cur_line.op_dst.type==1 || cur_line.op_dst.type==2) {
+                    int symbol_address = find_symbol_address (&symbol_table_ptr, cur_line.op_dst.name);
+                    if (!symbol_address) {
+                        fprintf (stderr, ERROR_LABEL_NOT_FOUND,cur_line.line_num, cur_line.filename); 
+                        printf ( ERROR_LABEL_NOT_FOUND,cur_line.line_num, cur_line.filename); 
+
+                        break;}
+                    else if (symbol_address == -1 ) {update_external_table (&external_table_ptr, IC+2, cur_line.op_dst.name);};
+                    if (cur_line.op_dst.type==2) symbol_address = symbol_address - IC;
+                    write_second_word(symbol_address,IC+2,cur_line.op_dst.type, &code_ptr);
+                }
+            }
+            
+        }
+        IC += cur_line.num_words;
+
+    
+    }
+    print_tables(symbol_table_ptr,data_ptr, code_ptr, external_table_ptr);
+    print_code (code_ptr, data_ptr, ICF);
     return 0;
 }
 

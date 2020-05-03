@@ -10,6 +10,8 @@
 #define ERROR_LABEL_NAME_IDENTICAL_DIR_MAME "ERROR: Label name can't be equal to directive names on line %d in file %s\n"
 #define ERROR_LABEL_NO_BRACKET "ERROR: No brackets needed on directive label declaration on line %d in file %s\n"
 #define ERROR_LABEL_EXIST "ERROR: Label already exist on line %d in file %s\n"
+#define ERROR_ENTRY_LABEL_NOT_FOUND "ERROR: Entry label in line %d not found in file %s \n"
+#define ERROR_LABEL_NOT_FOUND "ERROR: Label is not defined in line %d not found in file %s \n"
 
 /* Operations */
 #define ERROR_OPERATION_INVALID_FORMAT "ERROR: Unknown operation on line %d in file %s\n"
@@ -24,6 +26,7 @@
 /* general */
 #define ERROR_LINE_TOO_LONG "ERROR: Line number %d longer than the max allowed in file %s\n"
 #define ERROR_OUT_OF_MEMORY "FATAL: OUT OF MEMORY!\n"
+
 
 /* Directive */
 #define ERROR_UNDEFINED_DIRECTIVE "ERROR: Invalid directive on line  %d in file %s\n"

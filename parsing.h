@@ -11,6 +11,8 @@
 #define NUM_OPS 16
 #define NUM_REGS 7
 #define CODE_START 100
+#define FIRST_PASS_EXTERN_VAL 0
+#define SYMBOL_DIRECTIVE_CODE 0
 
 // #define reg_mex - 7
 // #define reg_size - 24 ?
