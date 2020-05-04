@@ -26,6 +26,9 @@
 /* general */
 #define ERROR_LINE_TOO_LONG "ERROR: Line number %d longer than the max allowed in file %s\n"
 #define ERROR_OUT_OF_MEMORY "FATAL: OUT OF MEMORY!\n"
+#define ERROR_MISSING_FILE "ERROR: Missing file name as input parameter\n"
+#define ERROR_OPEN_FILE "ERROR: Cannot open input file\n"
+#define ERROR_WRITE_FILE "ERROR: Cannot open for writing file\n"
 
 
 /* Directive */

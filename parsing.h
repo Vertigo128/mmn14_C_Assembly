@@ -13,6 +13,16 @@
 #define CODE_START 100
 #define FIRST_PASS_EXTERN_VAL 0
 #define SYMBOL_DIRECTIVE_CODE 0
+#define MAX_FILENAME_LENGTH 128
+#define FUNCT_FIRST_BIT 3
+#define REG_DST_FIRST_BIT 8
+#define ADDRESS_DST_FIRST_BIT 11
+#define REG_SRC_FIRST_BIT 13
+#define ADDRESS_SRC_FIRST_BIT 16
+#define OP_CODE_FIRST_BIT 18
+
+
+
 
 // #define reg_mex - 7
 // #define reg_size - 24 ?

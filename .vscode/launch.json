@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": [],
+            "args": ["tests/test_second_pass1","tests/test_pass_tables","tests/test_first_pass","tests/test_input_errors"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

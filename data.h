@@ -30,9 +30,6 @@ typedef struct symbol {
     struct symbol* next;
 } symbol;
 
-// typedef struct base2 {
-//     unsigned int num:24; 
-// } base2;
 
 typedef struct generated_code {
     unsigned int word; 
@@ -52,6 +49,13 @@ typedef struct error_stat {
     int failed;
 } error_stat;
 
+typedef struct filenames {
+    char name_ps[MAX_FILENAME_LENGTH];
+    char name_ob[MAX_FILENAME_LENGTH];
+    char name_ent[MAX_FILENAME_LENGTH];
+    char name_ext[MAX_FILENAME_LENGTH];
+} filenames;
+
 typedef struct {
     int label_flag;
     char* label_name; 
@@ -70,38 +74,4 @@ typedef struct {
 
 } line;
 
-// typedef struct {
-//     int IC; 
-//     int ARE;  /*0-3*/
-//     int op_src_type;
-//     int op_src_reg;
-//     int op_dst_type;
-//     int op_dst_reg;
-//     int op_code;
-//     int func;
-//     void* word1;
-//     void* word2;     
-// } first_word;
 
-
-
-typedef struct {
-	/* Assembler tables */
-    list* symbol;
-	// list* entry_table; /* List of type 'entry_with_line_num' */
-	// list* extern_table; /* List of type 'char*' */
-	// list* extern_refs_table; /* List of type 'ref_in_code' */
-	// list* data_labels_table; /* List of type 'data_label' */
-	// list* code_labels_table; /* List of type 'code_label' */
-	// list* code_label_refs_table; /* List of type 'ref_in_code' */
-	// cpu_word* data_table; /* Points to start of data table */
-	// unsigned int data_counter;
-	// cpu_word* code_table; /* Points to start of code table */
-	// unsigned int code_counter;
-
-	// /* Current file info */
-	// char* current_file_name;
-	// FILE* current_file_ptr;
-	// int current_line_num;
-	// int failed;
-} status;
