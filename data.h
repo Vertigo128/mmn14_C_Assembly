@@ -1,77 +1,81 @@
+#ifndef MMN14_DATA_H
+#define MMN14_DATA_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
-typedef struct list {
+typedef struct list { /*general chained list to store data */
 	void* value;
 	struct list* next;
 } list;
 
-typedef struct {
+typedef struct { /*struct to store operands data*/
     int type; /* address type 0-3 */
-    char* name;
-    int value;
-    int flag;
+    char* name; /*store the address label name*/
+    int value; /*store the operand numeric value*/
+    int flag; /*store on/off flag*/
 }operand;
 
 
-typedef struct external {
-    char* name;
-    int value;
+typedef struct external { /*store external table chained list*/
+    char* name; /*label name*/
+    int value; /*code address value*/
     struct external* next;
 } external;
 
-typedef struct symbol {
-    char* name;
-    int value;
+typedef struct symbol { /*struct to store symbol table*/
+    char* name; /*label name*/
+    int value; /*label address*/
     int type; /*0 for code, 1 for data, 2 for string, 3 for entry, 4 for extern*/
     int type_e; /*entry 1*/
     struct symbol* next;
 } symbol;
 
 
-typedef struct generated_code {
-    unsigned int word; 
-    int counter;
+typedef struct generated_code { /*struct to store code table*/
+    unsigned int word; /*code to store*/
+    int counter; /*IC counter*/
     struct generated_code* next; 
 } generated_code;
 
-typedef struct data_image {
+typedef struct data_image { /*struct to store data image table*/
     int type; /* 1 for data int, 2 for char */
-    int counter;
-    void* value;
+    int counter; /*DC counter*/
+    void* value; /*pointer value to store*/
     struct data_image* next;
 } data_image;
 
-typedef struct error_stat {
-    char* err_code;
-    int failed;
+typedef struct error_stat { /*store current error at current line struct*/
+    char* err_code; /*error code*/
+    int failed; /*Failure flag*/
 } error_stat;
 
-typedef struct filenames {
-    char name_ps[MAX_FILENAME_LENGTH];
-    char name_ob[MAX_FILENAME_LENGTH];
-    char name_ent[MAX_FILENAME_LENGTH];
-    char name_ext[MAX_FILENAME_LENGTH];
+typedef struct filenames { /*store the filenames of current file*/
+    char name_ps[MAX_FILENAME_LENGTH]; /*ps file*/
+    char name_ob[MAX_FILENAME_LENGTH]; /*ob file*/
+    char name_ent[MAX_FILENAME_LENGTH]; /*ent file*/
+    char name_ext[MAX_FILENAME_LENGTH]; /*ext file*/
 } filenames;
 
-typedef struct {
-    int label_flag;
-    char* label_name; 
+typedef struct { /*struct to store the parsing results of current line*/
+    int label_flag; /*Label flag */
+    char* label_name;  /*name of label*/
     int op_type;  /*0 for data/directive, 1 for code*/
     int directive_type;  /*1 for data, 2 for string, 3 for entry, 4 for extern*/
-    int num_oper;
-    list* data;
-    char* str;
-    operand op_src;
-    operand op_dst;
+    int num_oper; /*number of required operands*/
+    list* data; /*linked list to store data*/
+    char* str; /*store string directives*/
+    operand op_src; /*source operand*/
+    operand op_dst; /*destination operand*/
     int num_words; /*calculate the words required for current line*/    
-    error_stat error;
-    char* filename;
-    int line_num;
+    error_stat error; /*store error flag/type*/
+    char* filename; /*current filename*/
+    int line_num; /*current line number*/
     
 
 } line;
 
+#endif /* MMN14_DATA_H */
 
