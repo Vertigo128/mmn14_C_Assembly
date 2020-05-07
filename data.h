@@ -53,7 +53,7 @@ typedef struct error_stat { /*store current error at current line struct*/
 } error_stat;
 
 typedef struct filenames { /*store the filenames of current file*/
-    char name_ps[MAX_FILENAME_LENGTH]; /*ps file*/
+    char name_as[MAX_FILENAME_LENGTH]; /*as file*/
     char name_ob[MAX_FILENAME_LENGTH]; /*ob file*/
     char name_ent[MAX_FILENAME_LENGTH]; /*ent file*/
     char name_ext[MAX_FILENAME_LENGTH]; /*ext file*/

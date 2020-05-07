@@ -9,9 +9,7 @@ rts
 jmp &avc
 jmp avc
 Mylabel: stop
-Mylabel: lea abc, r1
+Mylabel1: lea labelnotfound, r1
 .string "abc@DCZXC+}|\"
-.entry test
-.extern test
-Mylabel:    .data 11    ,22
-Mylabel:    .data 11,   22
+Mylabel2:    .data 11    ,22
+Mylabel3:    .data 11,   22

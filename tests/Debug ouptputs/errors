@@ -1,0 +1,69 @@
+Error on line:      #
+Error on line:      1Mylabel:   mov #11  , LAbal1232
+Error on line:      M123456789123456789012345678901:   test
+Error on line:      M1234567891234567890123456789012:   test
+Error on line:      My]label:   mov #11  , LAbal1232
+Error on line:      Mylabel :   mov #11  , LAbal1232
+Error on line:      mylabel   mov #11  , LAbal1232
+Error on line:      mylabel:
+Error on line:      mylabel:   
+Error on line:      mylabel:   ,
+Error on line:      a1234567891234567890123456789012:    mov #11  , LAbal1232
+Error on line:      #test
+Error on line:      .string"abc"
+Error on line:      .string abc"
+Error on line:      .string "abc
+Error on line:      .string 1"abc"
+Error on line:      .string 
+Error on line:      .string
+Error on line:      mylabel: .data -11.1
+Error on line:      mylabel: .data11
+Error on line:      mylabel: .data,11
+Error on line:      mylabel: .data 11,
+Error on line:      mylabel: .data 11,-22,
+Error on line:      mylabel: .data 11123123123123123,-22
+Error on line:      mylabel: .data r1
+Error on line:      mylabel: .data test
+Error on line:      mylabel: .data
+Error on line:      mylabel: .data 
+Error on line:      Mylabel:    .data ,10,20
+Error on line:     Mylabel:    .data,10,20
+Error on line:     Mylabel:    .data 10.2,20
+Error on line:     Mylabel:    .data 10.2,20
+Error on line:     Mylabel:    .data 83888608,3
+Error on line:     Mylabel:    .data 11d
+Error on line:     Mylabel:    .data 11d,22
+Error on line:     Mylabel:    .data 11,22,
+Error on line:     Mylabel:    .data 
+Error on line:     Mylabel:    .data  11 22
+Error on line: 
+Error on line:      .extern EDFD:
+Error on line:      .extern EDFD:
+Error on line:      .extern "EDFD"
+Error on line:      .extern 1EDFD
+Error on line:      .extern ED,FD
+Error on line:      .extern
+Error on line:      .extern    
+Error on line:      
+Error on line:      Mylabel: mov #1, #2
+Error on line:      Mylabel: mov &a, b
+Error on line:      Mylabel: mov #a, #1
+Error on line:      Mylabel: mov #1, #a
+Error on line:      Mylabel: mov &r1, #1
+Error on line:      Mylabel: mov &mov, #1
+Error on line:      Mylabel: mov mov, #1
+Error on line:      Mylabel: mov #1 #1
+Error on line:      Mylabel: mov #1
+Error on line:      Mylabel: mov #112312341241 , #1
+Error on line:      Mylabel: mov      
+Error on line:      Mylabel: clr
+Error on line:      Mylabel: mov #1 , #1, sd
+Error on line:      Mylabel: clr #12, as
+Error on line:      Mylabel: clr 123
+Error on line:      Mylabel: clr #123
+Error on line:      Mylabel: clr &abc
+Error on line:      Mylabel: lea #123, abc 
+Error on line:      Mylabel: lea abc, #123
+Error on line:      Mylabel: lea abc, &abc
+
+ Done! 

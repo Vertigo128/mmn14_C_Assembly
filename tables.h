@@ -4,9 +4,11 @@
 #include "consts.h"
 #include "data.h"
 #include "errors.h"
+#include "helpers.h"
+#include "parsing.h"
 
 int check_dup_label (char* str, symbol* symbol_table);
-void update_symbol (symbol** symbol_table, line* line,int DC, char* target, int type);
+void update_symbol (symbol** symbol_table, line* line,int DC, char* target, int type); 
 int add_data_image (list* cur_line_data, data_image** data_img, int DC);
 int add_string_image (char* cur_line_string, data_image** data_img, int DC);
 void freelist_symbol (symbol* *ptr);

@@ -1,4 +1,4 @@
-main: add r3, list
+main: add r3, LIST
 LOOP: prn #48
 lea STR, r6
 inc r6
@@ -11,6 +11,6 @@ dec K
 jmp &LOOP
 END: stop
 STR: .string "abcd"
-list: .data 6,-9
+LIST: .data 6,-9
 .data -100
 K: .data 31

@@ -22,7 +22,7 @@ int read_ops (char** ptr, line* line);
 int check_oper_address_group (char* str);
 int check_valid_operands (line* line);
 int read_next_line (char** ptr, line* line);
-void find_funct_opcode (char* str, int* funct, int* op_code);
+void find_funct_opcode (char* str, unsigned int* funct, unsigned int* op_code);
 
 
 #endif /* PARSING_H */

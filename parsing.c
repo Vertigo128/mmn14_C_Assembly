@@ -103,7 +103,7 @@ int read_directive (char** ptr, line* line){
     line->op_type = 0; /*store operation type to data */
     line->directive_type = (direct); /*store directive type to relevant directive*/
     if (direct == 3 || direct == 4) line->num_words = 0; /*if entry/external number of code words is 0*/
-    skip_space(ptr); /*skip input pointer to next non-space word*/
+    if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_EMPTY_STRING,line); return 0;} ; /*raise error if string is empty*/
 
     switch (line->directive_type) /*read the directive base on directive type*/
     {
@@ -392,15 +392,16 @@ int check_valid_operands (line* line){
 inputs - ptr-> pointer to input string, line ->pointer line struct
 return 0 if parsing failed, 1 if passed*/
 int read_next_line (char** ptr, line* line){
-    if (strlen(*ptr)>Max_Line_Length) {print_error (ERROR_LINE_TOO_LONG,line); return 0;} /*raise error if current line is too long*/
+    if (strlen(*ptr)>=Max_Line_Length) {print_error (ERROR_LINE_TOO_LONG,line); return 0;} /*raise error if current line is too long*/
     skip_space(ptr); /*advance input pointer until non-space char*/
     if (CUR_CHAR== '#') return 0; /*if # ignore current line*/
     if (!expect_non_EOL_WS(ptr)) return 0; /*if line ended, ignore current line*/
     if (search_word(':',*ptr)) { /*call function to search to check if label is defined*/
-        if (read_label(ptr,line)) { /*call function to read label and store results at line struct*/
+        if (!read_label(ptr,line)) return 0;  /*call function to read label and store results at line struct*/
+        else {
             (*ptr)++; /*advance input pointer*/
             if (!expect_non_EOL_WS(ptr)) {print_error (ERROR_LABEL_EMPTY,line); return 0;} /*raise error if line ended after label declaration*/
-            }
+        }
     }
     if (CUR_CHAR=='.'){ /*check if char is . expect directive*/
         (*ptr)++; /*advance input pointer*/ 
@@ -416,7 +417,7 @@ int read_next_line (char** ptr, line* line){
 
 /* Find the funct and op_code of current command 
 inputs - str -> current operation, funct -> pointer to funct int, op_code ->pointer to op_code int*/
-void find_funct_opcode (char* str, int* funct, int* op_code) {
+void find_funct_opcode (char* str, unsigned int* funct, unsigned int* op_code) {
     int i; /*counter*/
     for (i=0;i<NUM_OPS;i++){ /*loop through operations array*/
         if (!strcmp(str,ops[i])) { /*check if str match array item, update funct and op_code based on operation found*/

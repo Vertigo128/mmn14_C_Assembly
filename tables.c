@@ -3,7 +3,6 @@
 #include "tables.h"
 
 
-
 /* Check if current label already exist on symbol table
 inputs - str -> string with current label, symbol_table -> current symbol tabel 
 return 0 if found, return 1 if passed without duplication */
@@ -18,21 +17,24 @@ int check_dup_label (char* str, symbol* symbol_table) {
     return 1; /*pass, current label doesn't exist on symbol table*/
 }
 
+
+void update_symbol (symbol** symbol_table, line* line,int DC, char* target, int type);
+
 /* Adds an element to a linked list pointer, and if it doesn't exist (ie. NULL), creates it and assigned to pointer 
 inputs - symbol_table -> pointer to symbol table, line -> current line struct, DC - data counter, 
           target ->operand to update, type -> new symbol name*/
 void update_symbol (symbol** symbol_table, line* line,int DC, char* target, int type) {
 	
     if (*symbol_table == NULL) { /*if symbol table note exist yet, create first node*/
-		*symbol_table = calloc(1, sizeof(symbol));
+	    *symbol_table = calloc(1, sizeof(symbol));
 
-		if (*symbol_table == NULL) { /* Check if calloc failed and exit*/
-			fprintf(stderr, ERROR_OUT_OF_MEMORY);
-			exit(1);
-		}
+  	    if (*symbol_table == NULL) { /* Check if calloc failed and exit*/
+		fprintf(stderr, ERROR_OUT_OF_MEMORY);
+		exit(1);
+ 	    }
 
-		/* update new symbol node with relevant values */
-		(*symbol_table)->value = DC; /*update counter*/
+	/* update new symbol node with relevant values */
+	(*symbol_table)->value = DC; /*update counter*/
         (*symbol_table)->type = type; /*update type*/
         (*symbol_table)->name = str_dup (target); /*copy name to allocated memory pointer in symbol table*/
         (*symbol_table)->next = NULL; /*set next node to null*/
@@ -43,7 +45,7 @@ void update_symbol (symbol** symbol_table, line* line,int DC, char* target, int 
 		while (ptr->next != NULL) { /* Skip to last element */
 			ptr = ptr->next;
 		}
-		ptr->next = calloc(1, sizeof(list)); /*create new node after last node*/
+		ptr->next = calloc(1, sizeof(symbol)); /*create new node after last node*/
 		if (ptr->next == NULL) { /* Check if calloc failed and exit */
 			fprintf(stderr, ERROR_OUT_OF_MEMORY);
 			exit(1);
@@ -80,24 +82,26 @@ int add_data_image (list* cur_line_data, data_image** data_img, int DC){
         else end_flag = 1; /*no further data node exist*/
     }
     /* data image table already exist*/
-    data_image* ptr = *data_img; /*set ptr to data image table*/
-    
+	{
+        data_image* ptr = *data_img; /*set ptr to data image table*/
+        
 
-    while (ptr->next != NULL) { /*get to last node of data_image*/
-        ptr = ptr->next;
-    }
-    while (end_flag == 0) { /*while not reach last data node of current line*/
-            ptr->next = calloc(1, sizeof(symbol)); /*create new node at data_image table*/
-            if (ptr->next == NULL) { /* Check if calloc failed and exit*/
-                fprintf(stderr, ERROR_OUT_OF_MEMORY);
-                exit(1);
-            }
-            ptr->next->counter = DC++; /*store and update counter*/
-            ptr->next->type = 1; /*set type to 1 - data*/
-            ptr->next->value = int_dup( cur_line_data->value); /*store results as allocated memory pointer*/
-            ptr = ptr->next; /*advance data image table pointer*/
-            if (cur_line_data->next != NULL)  cur_line_data = cur_line_data->next; /*advance to next data node of current line if available*/
-            else break; /*no further data node exist*/
+        while (ptr->next != NULL) { /*get to last node of data_image*/
+            ptr = ptr->next;
+        }
+        while (end_flag == 0) { /*while not reach last data node of current line*/
+                ptr->next = calloc(1, sizeof(data_image)); /*create new node at data_image table*/
+                if (ptr->next == NULL) { /* Check if calloc failed and exit*/
+                    fprintf(stderr, ERROR_OUT_OF_MEMORY);
+                    exit(1);
+                }
+                ptr->next->counter = DC++; /*store and update counter*/
+                ptr->next->type = 1; /*set type to 1 - data*/
+                ptr->next->value = int_dup( cur_line_data->value); /*store results as allocated memory pointer*/
+                ptr = ptr->next; /*advance data image table pointer*/
+                if (cur_line_data->next != NULL)  cur_line_data = cur_line_data->next; /*advance to next data node of current line if available*/
+                else break; /*no further data node exist*/
+        }
     }
 return DC; /*return the new DC counter*/
 }
@@ -107,7 +111,6 @@ return DC; /*return the new DC counter*/
 inputs - cur_line_data -> string  from current line, data_img -> pointer to data image table pointer, DC - data counter, 
 return the new DC counter*/
 int add_string_image (char* cur_line_string, data_image** data_img, int DC){
-    int end_flag = 0; /*flag as end of table*/
     if (*data_img == NULL) { /*data image table is not exist, create new*/
 		*data_img = calloc(1, sizeof(data_image));
 
@@ -122,34 +125,35 @@ int add_string_image (char* cur_line_string, data_image** data_img, int DC){
         cur_line_string++;  /*advance string pointer*/
 
     }
-    /* data image table already exist*/
-    data_image* ptr_img = *data_img; /*set ptr to data image table*/
-    while (ptr_img->next != NULL) { /*get to last node of data_image*/
-        ptr_img = ptr_img->next;
+    {
+        data_image* ptr_img = *data_img; /*set ptr to data image table*/
+        while (ptr_img->next != NULL) { /*get to last node of data_image*/
+            ptr_img = ptr_img->next;
+        }
+        while (*cur_line_string != '\0'){  /*keep store data until end of string*/
+                ptr_img->next = calloc(1, sizeof(data_image));  /*create new node at data_image table*/
+                if (ptr_img->next == NULL) { /* Check if calloc failed and exit*/
+                    fprintf(stderr, ERROR_OUT_OF_MEMORY);
+                    exit(1);
+                }
+                ptr_img->next->counter = DC++; /*store and update counter*/
+                ptr_img->next->type = 2; /*set type to 2 - string*/
+                ptr_img->next->value = charecter_dup(*cur_line_string); /*copy charecter pointer to data image table*/
+                ptr_img = ptr_img->next; /*advance to next data image node*/
+                cur_line_string++; /*advance string pointer*/
+        }
+        /*add last charected /0 node at data image table*/
+        ptr_img->next = calloc(1, sizeof(data_image)); /*create new nore*/
+        if (ptr_img->next == NULL) { /* Check if calloc failed and exit */
+            fprintf(stderr, ERROR_OUT_OF_MEMORY);
+            exit(1);
+        }
+        ptr_img->next->counter = DC++;  /*store and update counter*/
+        ptr_img->next->type = 2; /*set type to 2 - string*/
+        ptr_img->next->value = charecter_dup('\0'); /*add pointer to \0 character*/
+        ptr_img->next->next = NULL; /*set next node to NULL*/
+        return DC; /*return the updated DC*/
     }
-    while (*cur_line_string != '\0'){  /*keep store data until end of string*/
-            ptr_img->next = calloc(1, sizeof(data_image));  /*create new node at data_image table*/
-            if (ptr_img->next == NULL) { /* Check if calloc failed and exit*/
-                fprintf(stderr, ERROR_OUT_OF_MEMORY);
-                exit(1);
-            }
-            ptr_img->next->counter = DC++; /*store and update counter*/
-            ptr_img->next->type = 2; /*set type to 2 - string*/
-            ptr_img->next->value = charecter_dup(*cur_line_string); /*copy charecter pointer to data image table*/
-            ptr_img = ptr_img->next; /*advance to next data image node*/
-            cur_line_string++; /*advance string pointer*/
-    }
-    /*add last charected /0 node at data image table*/
-    ptr_img->next = calloc(1, sizeof(data_image)); /*create new nore*/
-    if (ptr_img->next == NULL) { /* Check if calloc failed and exit */
-        fprintf(stderr, ERROR_OUT_OF_MEMORY);
-        exit(1);
-    }
-    ptr_img->next->counter = DC++;  /*store and update counter*/
-    ptr_img->next->type = 2; /*set type to 2 - string*/
-    ptr_img->next->value = charecter_dup('\0'); /*add pointer to \0 character*/
-    ptr_img->next->next = NULL; /*set next node to NULL*/
-    return DC; /*return the updated DC*/
     
 }
 
@@ -231,7 +235,7 @@ int generate_first_word_code (line* line){
 inputs - first_word -> word to write to code table, code_ptr -> pointer to code table, IC - pointer to current IC counter*/
 void write_first_word_code (unsigned int first_word,generated_code** code_ptr,int* IC){
     if (*code_ptr == NULL) { /*if code table not exixt, create one*/
-		*code_ptr = calloc(1, sizeof(symbol));
+		*code_ptr = calloc(1, sizeof(generated_code));
 
 		
 		if (*code_ptr == NULL) { /* Check if calloc failed and exit */
@@ -251,7 +255,7 @@ void write_first_word_code (unsigned int first_word,generated_code** code_ptr,in
 		while (ptr->next != NULL) {
 			ptr = ptr->next;
 		}
-		ptr->next = calloc(1, sizeof(list)); /*create new node*/
+		ptr->next = calloc(1, sizeof(generated_code)); /*create new node*/
 		if (ptr->next == NULL) { /* Check if calloc failed and exit*/
 			fprintf(stderr, ERROR_OUT_OF_MEMORY);
 			exit(1);
@@ -277,7 +281,7 @@ void write_code_number (unsigned int number,generated_code** code_ptr,int* IC){
     while (ptr->next != NULL) {
         ptr = ptr->next;
     }
-    ptr->next = calloc(1, sizeof(list)); /*create new node*/
+    ptr->next = calloc(1, sizeof(generated_code)); /*create new node*/
     if (ptr->next == NULL) { /* Check if calloc failed  and exit */
         fprintf(stderr, ERROR_OUT_OF_MEMORY);
         exit(1);
@@ -298,7 +302,7 @@ void write_code_skip (generated_code** code_ptr,int* IC){
     while (ptr->next != NULL) {
         ptr = ptr->next;
     }
-    ptr->next = calloc(1, sizeof(list)); /*create new node*/
+    ptr->next = calloc(1, sizeof(generated_code)); /*create new node*/
     if (ptr->next == NULL) {  /* Check if calloc failed and exit*/
         fprintf(stderr, ERROR_OUT_OF_MEMORY);
         exit(1);
@@ -381,7 +385,7 @@ void update_external_table (external** external_ptr, int IC, char* str) {
 		while (ptr->next != NULL) { /* Skip to last element */
 			ptr = ptr->next;
 		}
-		ptr->next = calloc(1, sizeof(list)); /*create new node*/
+		ptr->next = calloc(1, sizeof(external)); /*create new node*/
 		if (ptr->next == NULL) { /* Check if calloc failed and exit */
 			fprintf(stderr, ERROR_OUT_OF_MEMORY);
 			exit(1);
@@ -407,13 +411,14 @@ void write_second_word (int symbol_address,int IC, int address_type, generated_c
         ARE = 1<<address_type; /* shift ARE per address type, if direct (1) R bit is on, if relative (2) L bit is on*/
         calculated_num =  (symbol_address<<3 | ARE); /*calculate the required word by combine the ARE and the shifted number to bits 3-24*/
     }
-    
-    generated_code* ptr = *code_ptr; /*set pointer*/
+    {
+	generated_code* ptr = *code_ptr; /*set pointer*/
 
-    while (ptr->counter != IC) { /*skip to last node*/
-        ptr = ptr->next;
+	while (ptr->counter != IC) { /*skip to last node*/
+	    ptr = ptr->next;
+	}
+
+	ptr->word = calculated_num; /*store the calculated word*/
     }
-
-    ptr->word = calculated_num; /*store the calculated word*/
 
 }

@@ -4,11 +4,11 @@
 inputs - argv -> pointer to argv array of input file names, files -> pointer to struct with current file names
          file_counter -> counter of number of files, file -> pointer to new file
 return 0 if failed, 1 if passed*/
-int open_ps_name (char** argv,filenames* files, int file_counter, FILE** file){
+int open_as_name (char** argv,filenames* files, int file_counter, FILE** file){
     
     char str_temp[MAX_FILENAME_LENGTH]; /*create temp file name string*/
     strcpy (str_temp,argv[file_counter]); /*copy current filename to str_temp*/
-    strcpy (files->name_ps,strcat(str_temp, ".ps")); /*concatenate .ps extention and store result at files struct*/
+    strcpy (files->name_as,strcat(str_temp, ".as")); /*concatenate .as extention and store result at files struct*/
     strcpy (str_temp,argv[file_counter]); /*copy current filename to str_temp*/
     strcpy (files->name_ent,strcat(str_temp, ".ent")); /*concatenate .ent extention and store result at files struct*/
     strcpy (str_temp,argv[file_counter]); /*copy current filename to str_temp*/
@@ -16,7 +16,7 @@ int open_ps_name (char** argv,filenames* files, int file_counter, FILE** file){
     strcpy (str_temp,argv[file_counter]); /*copy current filename to str_temp*/
     strcpy (files->name_ob,strcat(str_temp, ".ob")); /*concatenate .ob extention and store result at files struct*/
         
-    if (!(*file = fopen (files->name_ps,"r"))){ /*open ps file in read mode before parsing*/
+    if (!(*file = fopen (files->name_as,"r"))){ /*open as file in read mode before parsing*/
         fprintf (stderr, ERROR_OPEN_FILE); /*send error and exit if failed open file*/
         return (0); 
     }
@@ -30,7 +30,6 @@ inputs - code_ptr -> pointer to code table, data_ptr -> pointer to data image ta
 void print_code (generated_code* code_ptr, data_image* data_ptr, int ICF, int DCF, char* file_ob){
     FILE *current_file = NULL; /*create file pointer */
     char str[10]; /*set temp char array*/
-    char str_cpy[6]; /*set temp char array at final size*/
     int num; /*temp num */
     int str_len; /*store the converted to hex str length*/
 

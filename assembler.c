@@ -4,7 +4,7 @@
 int main (int argc, char *argv[]){
     
     
-    FILE *file_ps; /*pointer to current ps file*/
+    FILE *file_as; /*pointer to current as file*/
     char str[Max_Line_Length +1 ] ; /*string to store current line*/
     char *ptr = str; /*create pointer to current line string*/
     line cur_line; /*create current line parsing struct*/
@@ -13,24 +13,27 @@ int main (int argc, char *argv[]){
     unsigned int first_word; /*store current line first code word after parsing */
     int ICF; /*ICF define final code counter after first pass*/
     int DCF; /*DCF define final data counter after first pass*/
+    generated_code* code_ptr = NULL; /*initilize code table pointer*/
+    data_image* data_ptr = NULL; /*initilize data image table pointer*/
+    symbol* symbol_table_ptr =NULL; /*initilize symbol table pointer*/
+    external* external_table_ptr = NULL; /*initilize external table pointer*/
     
     
-    if (argc==1) {fprintf (stderr, ERROR_MISSING_FILE); return (1);}; /*raise error and exit if no ps file passed*/
+    if (argc==1) {fprintf (stderr, ERROR_MISSING_FILE); return (1);}; /*raise error and exit if no as file passed*/
 
-    while (file_counter<=(argc-1)) { /*keep while there is more ps files to compile*/
+    while (file_counter<=(argc-1)) { /*keep while there is more as files to compile*/
         int DC = 0; /*initilize data counter*/
         int IC = CODE_START; /*initilize code counter*/
         int error_flag = 0; /*set error flag to 0 */
-        generated_code* code_ptr = NULL; /*initilize code table pointer*/
-        data_image* data_ptr = NULL; /*initilize data image table pointer*/
-        symbol* symbol_table_ptr =NULL; /*initilize symbol table pointer*/
-        external* external_table_ptr = NULL; /*initilize external table pointer*/
-
-        if (!open_ps_name (argv, &files, file_counter, &file_ps)) {return 0;}; /*call function to open next file and save to file_ps pointer, exit if failed*/
+        freelist_symbol (&symbol_table_ptr); /*free symbol table*/
+        freelist_data (&data_ptr); /*free data image table*/
+        freelist_code (&code_ptr); /*free code table*/
+        freelist_external (&external_table_ptr); /*free external table*/
+        if (!open_as_name (argv, &files, file_counter, &file_as)) {return 0;}; /*call function to open next file and save to file_as pointer, exit if failed*/
         file_counter++; /*increase file counter by 1*/
-        cur_line.filename = files.name_ps; /*set and store file name*/
+        cur_line.filename = files.name_as; /*set and store file name*/
         cur_line.line_num = -1; /*set line counter to -1*/
-        while ((ptr = fgets (str,Max_Line_Length+1,file_ps))) { /*keep parsing and first pass until EOF*/
+        while ((ptr = fgets (str,Max_Line_Length+1,file_as))) { /*keep parsing and first pass until EOF*/
             initilize_line (&cur_line);  /*call funtion to initilize current line struct*/
             cur_line.line_num++; /*increase line counter*/
             if (read_next_line (&ptr, &cur_line)) { 
@@ -38,7 +41,7 @@ int main (int argc, char *argv[]){
                 if (cur_line.directive_type==1 || cur_line.directive_type==2) { /*if directive is data or string*/
                     if (cur_line.label_flag==1) { /*if label flag is on*/
                     /* check if label already exist on symbol table*/
-                        if (!check_dup_label(cur_line.label_name, symbol_table_ptr)) {print_error (ERROR_LABEL_EXIST,&cur_line); continue;}
+                        if (!check_dup_label(cur_line.label_name, symbol_table_ptr)) {print_error (ERROR_LABEL_EXIST,&cur_line);error_flag = 1; continue;}
                         update_symbol(&symbol_table_ptr,&cur_line,DC, cur_line.label_name,cur_line.directive_type); /*call function to update symbol table*/
                     }
                     if (cur_line.directive_type==1){ /*update data image with current line data */
@@ -54,7 +57,7 @@ int main (int argc, char *argv[]){
                 else { /*****Code command *****/
                     if (cur_line.label_flag==1) { /*if label flag is on*/
                         /* check if label already exist on symbol table*/
-                        if (!check_dup_label(cur_line.label_name, symbol_table_ptr)) {print_error (ERROR_LABEL_EXIST,&cur_line); continue;}
+                        if (!check_dup_label(cur_line.label_name, symbol_table_ptr)) {print_error (ERROR_LABEL_EXIST,&cur_line); error_flag = 1; continue;}
                         update_symbol(&symbol_table_ptr,&cur_line,IC, cur_line.label_name,SYMBOL_DIRECTIVE_CODE); /*call function to update symbol table*/
                     }
                     first_word =  generate_first_word_code (&cur_line); /*call function to generate first word and store results*/
@@ -80,29 +83,33 @@ int main (int argc, char *argv[]){
                     
 
                 }
+        	/*Help debugging function to print tables  
+           print_tables(symbol_table_ptr,data_ptr, code_ptr,external_table_ptr); */
 
             }
             else { /*if parsing failed, raise the error_flag and print current line */
-                if (cur_line.error.failed == 1) error_flag = 1; 
-                printf ("Error on line: %s", str);
+                if (cur_line.error.failed == 1) {
+		    error_flag = 1; 
+                    printf ("Error on line: %s", str);
+		}
             }
             
         } /*finished parsing and first pass  */
 
-        if (error_flag==1) return 1; /*stop program if error found during parsing*/
+        if (error_flag==1) continue; /*move to next file if error found during parsing*/
         ICF = IC; /*store final code counter*/
         DCF = DC; /*store final data counter*/
         update_symbol_first_pass (&symbol_table_ptr, ICF); /*update data items in symbol table with new counter*/
         
-        /* Help debugging function to print tables 
+        /*Help debugging function to print tables  
            print_tables(symbol_table_ptr,data_ptr, code_ptr,external_table_ptr); */
 
         /******Second Pass ************/
 
-        rewind (file_ps); /*start second pass from start of file */
+        rewind (file_as); /*start second pass from start of file */
         IC = CODE_START; /*intilize code counter back to start*/
 
-        while ((ptr = fgets (str,Max_Line_Length+1,file_ps))) { /*start parsing and second pass until EOF*/
+        while ((ptr = fgets (str,Max_Line_Length+1,file_as))) { /*start parsing and second pass until EOF*/
             initilize_line (&cur_line); /*initilize current line struct*/
             read_next_line (&ptr, &cur_line); /*call funtion to parse current line and store results at line struct*/
             /* if directive is data, string or external move to next line*/
@@ -163,16 +170,14 @@ int main (int argc, char *argv[]){
         
         } /*finish second pass*/
 
-        /*print_tables(symbol_table_ptr,data_ptr, code_ptr, external_table_ptr); Help debugging function to print tables*/
+        /* print_tables(symbol_table_ptr,data_ptr, code_ptr, external_table_ptr); Help debugging function to print tables */
         print_code (code_ptr, data_ptr, ICF,DCF,files.name_ob); /*call funcation to create ob and write code and data table*/
         print_external (external_table_ptr,files.name_ext); /*call function to create ext file and write external table*/
         print_entry (symbol_table_ptr, files.name_ent); /*call function to create entry file and write entry table*/
         
-        freelist_symbol (&symbol_table_ptr); /*free symbol table*/
-        freelist_data (&data_ptr); /*free data image table*/
-        freelist_code (&code_ptr); /*free code table*/
-        freelist_external (&external_table_ptr); /*free external table*/
+
     } /*finished compile all files*/
+    printf ("\n Done! \n");
     return 0;
 }
 

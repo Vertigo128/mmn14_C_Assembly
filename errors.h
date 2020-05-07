@@ -41,7 +41,7 @@
 /* Directive Strings*/
 
 #define ERROR_EXPECTED_DOUBLE_BRACKET "ERROR: Expected double bracket for string declaration on line  %d in file %s\n"
-#define ERROR_EMPTY_STRING "ERROR: Empty string on line  %d in file %s\n"
+#define ERROR_EMPTY_STRING "ERROR: Empty directive on line  %d in file %s\n"
 #define ERROR_STRING_EOL "ERROR: Line ended without string double bracket encapsulation on line  %d in file %s\n"
 #define ERROR_STRING_INVALID "ERROR: Invalid character on string declaration on line  %d in file %s\n"
 #define ERROR_STRING_EXPECTED_EOL "ERROR: Line expected to end after string declaration on line  %d in file %s\n"
